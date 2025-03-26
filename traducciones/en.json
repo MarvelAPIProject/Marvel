@@ -1,0 +1,30 @@
+{
+    "header": {
+        "title": "Marvel",
+        "subtitle": "Explore the vast universe of Marvel characters, comics, and series"
+    },
+    "search": {
+        "placeholder": "Which superhero are you looking for?",
+        "button": "Search"
+    },
+    "filters": {
+        "title": "Filter by Universe",
+        "all": "All",
+        "universe616": "Universe 616 (Main)",
+        "ultimate": "Ultimate (1610)",
+        "mcu": "MCU (199999)",
+        "xmen": "X-Men (10005)",
+        "spider": "Spider-Verse (1048)",
+        "noir": "Marvel Noir (90214)"
+    },
+    "footer": {
+        "developed": "Developed by the CSS Group",
+        "rights": "© 2025 MARVEL. All rights reserved.",
+        "marvelInfo": "Marvel characters and logos are the property of <a href='https://developer.marvel.com/' target='_blank'>Marvel Entertainment, LLC</a>",
+        "educational": "This site is an educational project with no commercial intent."
+    }
+    "character": {
+        "universe616": "Universe 616",
+        "comicsCount": "{count} comics available"
+    }
+}

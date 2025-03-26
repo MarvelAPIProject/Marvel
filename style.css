@@ -1,0 +1,374 @@
+:root {
+    --rojito: #e62429;
+    --oscurito: #202020;
+    --casi-negro: #151515;
+    --blanquito: #f0f0f0;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0px;
+    padding: 0px;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: var(--casi-negro);
+    color: var(--blanquito);
+}
+
+main{            
+    margin-bottom: 300px;
+}
+
+.container {
+    margin: 0 auto;
+    padding: 0 1rem;
+}
+
+header {
+    background: linear-gradient(135deg, #000000, #2d2d2d);
+    padding: 2rem 0;
+    position: relative;
+}
+
+.header-content {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+}
+
+.marvel-logo {
+    font-size: 3.5rem;
+    font-weight: 900px;
+    color: var(--blanquito);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 5px;
+    text-shadow: 3px 3px 0px rgba(0, 0, 0, 0.8);
+    display: inline-block;
+    position: relative;
+    padding: 0 10px;
+}
+
+.marvel-logo::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: var(--rojito);
+    z-index: -1;
+    transform: skewX(-25deg);
+}
+
+.subtitle {
+    font-size: 1.3rem;
+    color: #ccc;
+    margin-bottom: 2rem;
+    font-style: italic;
+}
+
+.cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+}
+
+.character-card {
+    background: var(--oscurito);
+    border-radius: 12px;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+    transition: transform 0.4s ease, box-shadow 0.4s ease;
+    position: relative;
+    height: 380px;
+    display: flex;
+    flex-direction: column;
+    margin: 2rem;
+    z-index: 1;
+}
+
+.character-card:hover {
+    transform: translateY(-10px) scale(1.03);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.5), 0 0 20px rgba(230, 36, 41, 0.3);
+}
+
+
+
+
+
+.character-card:hover .character-image {
+    transform: scale(1.1);
+}
+
+.character-card:hover .character-name {
+    color: var(--rojito);
+    transform: translateX(5px);
+}
+
+.character-card:hover .universe-badge{
+    top: 10px;
+    right: 10px;
+}
+
+
+
+.character-image {
+    width: 100%;
+    height: 280px;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+    transform-origin: center;
+}
+
+.character-info {
+    padding: 1.2rem;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content:space-around;
+}
+
+.character-name {
+    font-size: 1.4rem;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+    transition: color 0.3s ease, transform 0.3s ease;
+    display: inline-block;
+}
+
+.character-comics {
+    color: #aaa;
+    font-size: 0.9rem;
+}
+
+
+footer {
+    background: var(--oscurito);
+    padding: 2rem 0;
+    text-align: center;
+    width: 100%;
+    margin-top: auto;
+
+}
+
+.barrabuscador {
+    margin: 2rem auto;
+    max-width: 600px;
+    position: relative;
+    display: flex;
+    border-radius: 50px;
+    overflow: hidden;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    border: 2px solid var(--oscurito);
+    transition: all 0.3s ease;
+}
+
+.barrabuscador:hover {
+    box-shadow: 0 8px 20px rgba(230, 36, 41, 0.4);
+    border-color: var(--rojito);
+}
+
+#buscador {
+    flex: 1;
+    padding: 15px 20px;
+    font-size: 16px;
+    border: none;
+    outline: none;
+    background-color: var(--oscurito);
+    color: var(--blanquito);
+    letter-spacing: 0.5px;
+}
+
+#buscador::placeholder {
+    color: #888;
+    font-style: italic;
+}
+
+#search {
+    background-color: var(--rojito);
+    color: var(--blanquito);
+    border: none;
+    padding: 0 25px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    border-radius: 25px;
+}
+
+#search:hover {
+    background-color: #c41f24;
+}
+
+.copyright {
+    margin-top: 1rem;
+    font-size: 0.8rem;
+    color: #888;
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+}
+
+.copyright a {
+    color: var(--rojito);
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.copyright a:hover {
+    color: var(--blanquito);
+}
+
+.universe-filters {
+    margin: 2rem auto;
+    text-align: center;
+}
+
+.filters-title {
+    font-size: 1.2rem;
+    margin-bottom: 1rem;
+    color: var(--blanquito);
+    position: relative;
+    display: inline-block;
+    padding-bottom: 0.5rem;
+}
+
+.filters-title::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 10%;
+    right: 10%;
+    height: 3px;
+    background-color: var(--rojito);
+}
+
+.filter-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 1.5rem;
+}
+
+.filter-button {
+    background-color: var(--oscurito);
+    color: var(--blanquito);
+    border: 2px solid #444;
+    border-radius: 25px;
+    padding: 8px 16px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    z-index: 1;
+}
+
+.filter-button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background-color: var(--rojito);
+    border-radius: 25px;
+    transition: all 0.2s ease;
+    z-index: -1;
+}
+
+.filter-button:hover {
+    color: var(--blanquito);
+    border-color: var(--rojito);
+}
+
+.filter-button:hover::before {
+    left: 0;
+}
+
+.filter-button.active {
+    background-color: var(--rojito);
+    border-color: var(--rojito);
+    color: white;
+    font-weight: bold;
+}
+
+.universe-badge {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background-color: rgba(0, 0, 0, 0.7);
+    color: var(--blanquito);
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    border-left: 3px solid var(--rojito);
+    border-right: 3px solid var(--rojito);
+    z-index: 2;
+}
+
+    .language-selector-container {
+    position: relative;
+    display: inline-block;
+    margin-top: 15px;
+}
+
+    .language-label {
+    color: var(--blanquito);
+    margin-right: 10px;
+    font-size: 0.9rem;
+}
+
+    .language-selector {
+    appearance: none;
+    background-color: var(--oscurito);
+    color: var(--blanquito);
+    border: 2px solid #444;
+    border-radius: 25px;
+    padding: 8px 16px 8px 12px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    min-width: 120px;
+    text-align: center;
+    background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23FFFFFF%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px top 50%;
+    background-size: 12px auto;
+    padding-right: 30px;
+}
+
+    .language-selector:hover, .language-selector:focus {
+    border-color: var(--rojito);
+    box-shadow: 0 0 8px rgba(230, 36, 41, 0.4);
+    outline: none;
+}
+
+    .language-selector::after {
+    content: '';
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-top: 5px solid var(--blanquito);
+    pointer-events: none;
+}
+
+    .language-selector:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(230, 36, 41, 0.3);
+}
+
+.idioma{
+    position: absolute;
+    right: 20px;
+    top: 0px;
+    width: auto;
+}

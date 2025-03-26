@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Marvel Universe Explorer</title>
+    <link rel="icon" type="image/x-icon" href="marvelfav.png">
+    
+    <link rel="stylesheet" href="style.css">
+    
+</head>
+<body>
+    <header>
+        <div class="header-content container">
+            <h1 class="marvel-logo" data-i18n="header.title"></h1>
+            <p class="subtitle" data-i18n="header.subtitle"></p>
+            <div class ="idioma">
+                <label for="language-selector" data-i18n="idioma"></label>
+                <select id="language-selector">
+                    <option value="es">Español</option>
+                    <option value="en">English</option>
+                    <option value="fr">Français</option>
+                    <option value="ro">Română</option>
+                </select>
+            </div>
+        </div>
+        <div class="barrabuscador">
+            <input type="text" id="buscador" data-i18n-placeholder="search.placeholder" />
+            <button type="button" id="search" data-i18n="search.button" ></button>
+          </div>
+    </header>
+    
+    <main class="container">
+        
+          <div class="universe-filters">
+            <h2 class="filters-title" data-i18n="filters.title"></h2>
+            <div class="filter-buttons">
+                <button class="filter-button active" data-universe="all" data-i18n="filters.all"></button>
+                <button class="filter-button" data-universe="616" data-i18n="filters.universe616"></button>
+                <button class="filter-button" data-universe="ultimate" data-i18n="filters.ultimate"></button>
+                <button class="filter-button" data-universe="mcu" data-i18n="filters.mcu"></button>
+                <button class="filter-button" data-universe="xmen" data-i18n="filters.xmen"></button>
+                <button class="filter-button" data-universe="spider" data-i18n="filters.spider"></button>
+                <button class="filter-button" data-universe="noir" data-i18n="filters.noir"></button>
+            </div>
+        </div>
+        <div class="cards-grid">
+            <div class="character-card" data-universe="616 mcu">
+                <div class="universe-badge" data-i18n="character.universe616"></div>
+                <img src="spiderman.jpg" alt="Spiderman" class="character-image">
+                <div class="character-info">
+                    <h3 class="character-name">Spider-Man</h3>
+                    <p class="character-comics" data-i18n="character.comicsCount" data-comics="1500"></p>
+                </div>
+            </div>
+        
+            <div class="character-card" data-universe="616 mcu">
+                <div class="universe-badge" data-i18n="character.universe616"></div>
+                <img src="ironman.jpg" alt="Ironman" class="character-image">
+                <div class="character-info">
+                    <h3 class="character-name">Iron Man</h3>
+                    <p class="character-comics" data-i18n="character.comicsCount" data-comics="1200"></p>
+                </div>
+            </div>
+        </div>
+            
+        </div>
+    </main>
+    
+    <footer>
+        <p id="datos" data-i18n="footer.developed"></p>
+        <div class="copyright">
+            <p data-i18n="footer.rights"></p>
+            <p data-i18n="footer.marvelInfo"></p>
+            <p data-i18n="footer.educational"></p>
+        </div>
+    </footer>
+
+    <script src="main.js"></script>
+
+</body>
+</html>
