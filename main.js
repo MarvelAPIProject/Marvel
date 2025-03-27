@@ -200,3 +200,102 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 
+
+
+
+const publicKey = 'dd0b4fdacdd0b53c744fb36389d154db'; // Tu clave pública
+const privateKey = '360fa86fb66f723c45b84fb38e08c7477fbf29f2'; // Tu clave privada
+const baseUrl = 'https://gateway.marvel.com/v1/public';
+
+// Función para generar el hash MD5 correctamente
+function generateHash(ts) {
+    return CryptoJS.MD5(ts + privateKey + publicKey).toString();
+}
+
+// Obtener y mostrar personajes
+async function fetchAllCharacters() {
+  const ts = Date.now().toString(); // Genera un timestamp único
+  const hash = generateHash(ts); // Genera el hash correcto
+  const url = `${baseUrl}/characters?limit=20&ts=${ts}&apikey=${publicKey}&hash=${hash}`; // Usar limit=5
+
+  console.log("🟢 URL de la petición:", url);
+
+  try {
+      const response = await fetch(url);
+      console.log("🔍 Respuesta del servidor:", response);
+      if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const data = await response.json();
+      console.log("✅ Personajes recibidos:", data);
+      return data.data.results;
+  } catch (error) {
+      console.error("❌ Error obteniendo personajes:", error);
+      displayError('Error al cargar los personajes. Por favor, inténtalo más tarde.');
+      return [];
+  }
+}
+
+// Mostrar los personajes en pantalla
+function displayCharacters(characters) {
+    const cardsGrid = document.querySelector('.cards-grid');
+    const errorMessage = document.getElementById('error-message');
+    cardsGrid.innerHTML = ''; 
+    errorMessage.textContent = ''; 
+
+    if (characters.length === 0) {
+        errorMessage.textContent = 'No se encontraron personajes.';
+        return;
+    }
+
+    characters.forEach(character => {
+        const card = document.createElement('div');
+        card.className = 'character-card';
+
+        const img = document.createElement('img');
+        img.src = `${character.thumbnail.path}.${character.thumbnail.extension}`;
+        img.alt = character.name;
+        img.className = 'character-image';
+
+        const info = document.createElement('div');
+        info.className = 'character-info';
+
+        const name = document.createElement('h3');
+        name.className = 'character-name';
+        name.textContent = character.name;
+
+        const comicsCount = document.createElement('p');
+        comicsCount.className = 'character-comics';
+        comicsCount.textContent = `${character.comics.available} cómics disponibles`;
+
+        info.appendChild(name);
+        info.appendChild(comicsCount);
+        card.appendChild(img);
+        card.appendChild(info);
+        cardsGrid.appendChild(card);
+    });
+}
+
+// Cargar personajes al cargar la página
+document.addEventListener('DOMContentLoaded', async () => {
+    const characters = await fetchAllCharacters();
+    displayCharacters(characters);
+});
+
+// Función para mostrar errores en la página
+function displayError(message) {
+    const errorMessage = document.getElementById('error-message');
+    errorMessage.textContent = message;
+}
+
+// Evento de búsqueda (corrigiendo la función que se usa)
+document.getElementById('search').addEventListener('click', async () => {
+    const searchTerm = document.getElementById('buscador').value.trim();
+    if (searchTerm) {
+        // Puedes agregar lógica aquí para realizar una búsqueda por nombre de personaje
+        const characters = await fetchAllCharacters(); // Aquí debería llamarse `fetchAllCharacters` si no estás haciendo una búsqueda más avanzada
+        displayCharacters(characters);
+    } else {
+        displayError('Por favor, ingresa un nombre de personaje.');
+    }
+});

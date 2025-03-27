@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Marvel Universe Explorer</title>
     <link rel="icon" type="image/x-icon" href="marvelfav.png">
-    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.9-1/crypto-js.js"></script>
     <link rel="stylesheet" href="style.css">
     
 </head>
@@ -44,27 +44,10 @@
                 <button class="filter-button" data-universe="noir" data-i18n="filters.noir"></button>
             </div>
         </div>
-        <div class="cards-grid">
-            <div class="character-card" data-universe="616 mcu">
-                <div class="universe-badge" data-i18n="character.universe616"></div>
-                <img src="spiderman.jpg" alt="Spiderman" class="character-image">
-                <div class="character-info">
-                    <h3 class="character-name">Spider-Man</h3>
-                    <p class="character-comics" data-i18n="character.comicsCount" data-comics="1500"></p>
-                </div>
-            </div>
-        
-            <div class="character-card" data-universe="616 mcu">
-                <div class="universe-badge" data-i18n="character.universe616"></div>
-                <img src="ironman.jpg" alt="Ironman" class="character-image">
-                <div class="character-info">
-                    <h3 class="character-name">Iron Man</h3>
-                    <p class="character-comics" data-i18n="character.comicsCount" data-comics="1200"></p>
-                </div>
-            </div>
-        </div>
-            
-        </div>
+        <main class="container">
+            <p id="error-message"></p> <!-- Contenedor para errores -->
+            <div class="cards-grid"></div> <!-- Contenedor para personajes -->
+        </main>
     </main>
     
     <footer>
