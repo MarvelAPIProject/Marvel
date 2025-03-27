@@ -17,7 +17,7 @@ body {
     color: var(--blanquito);
 }
 
-main{            
+main {            
     margin-bottom: 300px;
 }
 
@@ -40,7 +40,7 @@ header {
 
 .marvel-logo {
     font-size: 3.5rem;
-    font-weight: 900px;
+    font-weight: 900;
     color: var(--blanquito);
     text-transform: uppercase;
     letter-spacing: 2px;
@@ -93,10 +93,6 @@ header {
     box-shadow: 0 15px 30px rgba(0, 0, 0, 0.5), 0 0 20px rgba(230, 36, 41, 0.3);
 }
 
-
-
-
-
 .character-card:hover .character-image {
     transform: scale(1.1);
 }
@@ -106,12 +102,10 @@ header {
     transform: translateX(5px);
 }
 
-.character-card:hover .universe-badge{
+.character-card:hover .universe-badge {
     top: 10px;
     right: 10px;
 }
-
-
 
 .character-image {
     width: 100%;
@@ -126,7 +120,7 @@ header {
     flex: 1;
     display: flex;
     flex-direction: column;
-    justify-content:space-around;
+    justify-content: space-around;
 }
 
 .character-name {
@@ -142,14 +136,12 @@ header {
     font-size: 0.9rem;
 }
 
-
 footer {
     background: var(--oscurito);
     padding: 2rem 0;
     text-align: center;
     width: 100%;
     margin-top: auto;
-
 }
 
 .barrabuscador {
@@ -312,19 +304,19 @@ footer {
     z-index: 2;
 }
 
-    .language-selector-container {
+.language-selector-container {
     position: relative;
     display: inline-block;
     margin-top: 15px;
 }
 
-    .language-label {
+.language-label {
     color: var(--blanquito);
     margin-right: 10px;
     font-size: 0.9rem;
 }
 
-    .language-selector {
+.language-selector {
     appearance: none;
     background-color: var(--oscurito);
     color: var(--blanquito);
@@ -343,13 +335,13 @@ footer {
     padding-right: 30px;
 }
 
-    .language-selector:hover, .language-selector:focus {
+.language-selector:hover, .language-selector:focus {
     border-color: var(--rojito);
     box-shadow: 0 0 8px rgba(230, 36, 41, 0.4);
     outline: none;
 }
 
-    .language-selector::after {
+.language-selector::after {
     content: '';
     position: absolute;
     right: 12px;
@@ -361,12 +353,12 @@ footer {
     pointer-events: none;
 }
 
-    .language-selector:hover {
+.language-selector:hover {
     transform: translateY(-2px);
     box-shadow: 0 5px 15px rgba(230, 36, 41, 0.3);
 }
 
-.idioma{
+.idioma {
     position: absolute;
     right: 20px;
     top: 0px;
