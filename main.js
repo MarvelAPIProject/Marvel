@@ -216,36 +216,78 @@ const publicKey = 'dd0b4fdacdd0b53c744fb36389d154db'; // Tu clave pública
 const privateKey = '360fa86fb66f723c45b84fb38e08c7477fbf29f2'; // Tu clave privada
 const baseUrl = 'https://gateway.marvel.com/v1/public';
 
-// Función para generar el hash MD5 correctamente
+
+// Función para generar hash de manera más precisa
 function generateHash(ts) {
-    return CryptoJS.MD5(ts + privateKey + publicKey).toString();
+  // Asegurarse de que ts es un string
+  const tsString = ts.toString();
+  return CryptoJS.MD5(tsString + privateKey + publicKey).toString();
 }
 
-/* The above code is a JavaScript function that fetches a list of characters from a remote API. Here is
-a breakdown of what the code does: */
+
 // Obtener y mostrar personajes
-async function fetchAllCharacters() {
-  const ts = Date.now().toString(); // Genera un timestamp único
-  const hash = generateHash(ts); // Genera el hash correcto
-  const url = `${baseUrl}/characters?limit=5&ts=${ts}&apikey=${publicKey}&hash=${hash}`;
+async function fetchCharacters(searchTerm = '') {
+  // Usar timestamp en segundos para mayor compatibilidad
+  const ts = Math.floor(Date.now() / 1000);
+  const hash = generateHash(ts.toString());
+  
+  // Construir URL de manera más robusta
+  const params = new URLSearchParams({
+    ts: ts.toString(),
+    apikey: publicKey,
+    hash: hash,
+    limit: '5'
+  });
 
+  // Añadir búsqueda por nombre si está presente
+  if (searchTerm) {
+    params.append('nameStartsWith', searchTerm);
+  }
+
+  const url = `${baseUrl}/characters?${params.toString()}`;
+  
+  console.group('🕵️ Marvel API Debug');
   console.log("🟢 URL de la petición:", url);
-
+  console.log("Timestamp:", ts);
+  console.log("Hash generado:", hash);
+  
   try {
-      const response = await fetch(url);
-      console.log("🔍 Respuesta del servidor:", response);
-      if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
       }
-      const data = await response.json();
-      console.log("✅ Personajes recibidos:", data);
-      return data.data.results;
+    });
+
+    console.log("Estado de la respuesta:", response.status);
+    console.log("Respuesta completa:", response);
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Detalles del error:', {
+        status: response.status,
+        statusText: response.statusText,
+        errorBody: errorText
+      });
+      
+      throw new Error(`Error HTTP: ${response.status} - ${errorText}`);
+    }
+    
+    const data = await response.json();
+    console.log("✅ Datos recibidos:", data);
+    console.groupEnd();
+
+    return data.data.results;
   } catch (error) {
-      console.error("❌ Error obteniendo personajes:", error);
-      displayError('Error al cargar los personajes. Por favor, inténtalo más tarde.');
-      return [];
+    console.error("❌ Error completo:", error);
+    console.groupEnd();
+    
+    displayError('Error al cargar los personajes. Verifica tu conexión o credenciales.');
+    return [];
   }
 }
+
 /**
  * The function `displayCharacters` takes an array of character objects, creates HTML cards for each
  * character, and displays them in a specified container on a web page.
@@ -289,7 +331,7 @@ using the `displayCharacters` function. */
 
 // Cargar personajes al cargar la página
 document.addEventListener('DOMContentLoaded', async () => {
-    const characters = await fetchAllCharacters();
+    const characters = await fetchCharacters();
     displayCharacters(characters);
 });
 
@@ -315,13 +357,13 @@ whitespace from the value, and stores it in the searchTerm variable. If the sear
 it then fetches all characters asynchronously using the fetchAllCharacters function and displays the
 characters using the displayCharacters function. If the searchTerm is empty, it displays an error
 message saying "Por favor, ingresa un nombre de personaje." */
-// Evento de búsqueda (corrigiendo la función que se usa)
+// Actualizar evento de búsqueda
 document.getElementById('search').addEventListener('click', async () => {
-    const searchTerm = document.getElementById('buscador').value.trim();
-    if (searchTerm) {
-        const characters = await fetchAllCharacters(); 
-        displayCharacters(characters);
-    } else {
-        displayError('Por favor, ingresa un nombre de personaje.');
-    }
+  const searchTerm = document.getElementById('buscador').value.trim();
+  if (searchTerm) {
+      const characters = await fetchCharacters(searchTerm);
+      displayCharacters(characters);
+  } else {
+      displayError('Por favor, ingresa un nombre de personaje.');
+  }
 });
