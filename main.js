@@ -1,9 +1,3 @@
-/* The above code defines a JavaScript object named `translations` that contains language-specific
-translations for a Marvel-themed website. Each language (Spanish, English, French, and Romanian) has
-its own set of key-value pairs for various text elements such as headers, subtitles, search
-placeholders, button texts, filters, character information, footer details, and more. These
-translations allow the website to display content in multiple languages based on the user's language
-preference. */
 
 const translations = {
   "es": {
@@ -207,163 +201,132 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 
+// Configuración
+const CONFIG = {
+  publicKey: '4efc99263ca737e15328c189af7dc0b0', // Reemplaza con tu clave real
+  privateKey: 'c13b1561dc18f4872a6db81c50629e5674dc137d', // Reemplaza con tu clave real
+  baseUrl: 'https://gateway.marvel.com/v1/public',
+  fallbackUrl: 'https://cdn.jsdelivr.net/gh/akabab/superhero-api@0.3.0/api/all.json',
+  defaultLimit: 20
+};
 
-/* The above code is setting up variables for a Marvel API integration in JavaScript. It defines a
-public key, a private key, and a base URL for making requests to the Marvel API. These keys are
-typically used for authentication and authorization when accessing the Marvel API endpoints. */
-
-const publicKey = 'dd0b4fdacdd0b53c744fb36389d154db'; // Tu clave pública
-const privateKey = '360fa86fb66f723c45b84fb38e08c7477fbf29f2'; // Tu clave privada
-const baseUrl = 'https://gateway.marvel.com/v1/public';
-
-
-// Función para generar hash de manera más precisa
+// Función para generar el hash
 function generateHash(ts) {
-  // Asegurarse de que ts es un string
-  const tsString = ts.toString();
-  return CryptoJS.MD5(tsString + privateKey + publicKey).toString();
+  return CryptoJS.MD5(ts + CONFIG.privateKey + CONFIG.publicKey).toString();
 }
 
+// Función mejorada para obtener personajes
+async function fetchAllCharacters() {
+  const ts = Date.now().toString();
+  const hash = generateHash(ts);
+  const url = `${CONFIG.baseUrl}/characters?limit=${CONFIG.defaultLimit}&ts=${ts}&apikey=${CONFIG.publicKey}&hash=${hash}`;
 
-// Obtener y mostrar personajes
-async function fetchCharacters(searchTerm = '') {
-  // Usar timestamp en segundos para mayor compatibilidad
-  const ts = Math.floor(Date.now() / 1000);
-  const hash = generateHash(ts.toString());
-  
-  // Construir URL de manera más robusta
-  const params = new URLSearchParams({
-    ts: ts.toString(),
-    apikey: publicKey,
-    hash: hash,
-    limit: '5'
-  });
-
-  // Añadir búsqueda por nombre si está presente
-  if (searchTerm) {
-    params.append('nameStartsWith', searchTerm);
-  }
-
-  const url = `${baseUrl}/characters?${params.toString()}`;
-  
-  console.group('🕵️ Marvel API Debug');
-  console.log("🟢 URL de la petición:", url);
-  console.log("Timestamp:", ts);
-  console.log("Hash generado:", hash);
-  
   try {
+    // Intenta con la API Marvel primero
     const response = await fetch(url, {
-      method: 'GET',
+      mode: 'cors',
       headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json'
+        'Accept': 'application/json'
       }
     });
 
-    console.log("Estado de la respuesta:", response.status);
-    console.log("Respuesta completa:", response);
-
     if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Detalles del error:', {
-        status: response.status,
-        statusText: response.statusText,
-        errorBody: errorText
-      });
-      
-      throw new Error(`Error HTTP: ${response.status} - ${errorText}`);
+      throw new Error(`HTTP error! status: ${response.status}`);
     }
-    
-    const data = await response.json();
-    console.log("✅ Datos recibidos:", data);
-    console.groupEnd();
 
-    return data.data.results;
+    const data = await response.json();
+    return data.data?.results || [];
   } catch (error) {
-    console.error("❌ Error completo:", error);
-    console.groupEnd();
-    
-    displayError('Error al cargar los personajes. Verifica tu conexión o credenciales.');
-    return [];
+    console.error("Error con Marvel API:", error);
+    // Fallback a datos de prueba si Marvel API falla
+    return await fetchFallbackData();
   }
 }
 
-/**
- * The function `displayCharacters` takes an array of character objects, creates HTML cards for each
- * character, and displays them in a specified container on a web page.
- * @param characters - The `characters` parameter is an array containing objects representing different
- * characters. Each character object has properties like `name`, `thumbnail` (which is an object
- * containing `path` and `extension` properties for the image URL), and `description`. The
- * `displayCharacters` function takes this array of character
- * @returns If the `characters` array is empty, the function will return early after setting the error
- * message "No se encontraron personajes." in the element with id "error-message". Otherwise, if there
- * are characters in the array, the function will display each character's information in a card format
- * on the webpage.
- */
+// Función de fallback
+async function fetchFallbackData() {
+  try {
+    const response = await fetch(CONFIG.fallbackUrl);
+    const data = await response.json();
+    return data.slice(0, CONFIG.defaultLimit).map(character => ({
+      id: character.id,
+      name: character.name,
+      thumbnail: {
+        path: character.images?.lg || character.images?.md || character.images?.sm,
+        extension: 'jpg'
+      },
+      comics: {
+        available: character.comics?.available || 0
+      }
+    }));
+  } catch (fallbackError) {
+    console.error("Error con datos de fallback:", fallbackError);
+    return []; // Retorna array vacío si todo falla
+  }
+}
+
+// Función para mostrar personajes (ahora más robusta)
 function displayCharacters(characters) {
-  const cardContainer = document.getElementById("card-container");
-  const template = document.getElementById("card-template");
+  const cardsGrid = document.querySelector('.cards-grid');
+  const errorMessage = document.getElementById('error-message');
+  
+  // Limpiar contenido previo
+  cardsGrid.innerHTML = '';
+  errorMessage.textContent = '';
 
-  cardContainer.innerHTML = ""; // Limpiar contenedor antes de agregar nuevas tarjetas
-
-  if (characters.length === 0) {
-      document.getElementById("error-message").textContent = "No se encontraron personajes.";
-      return;
+  // Verificar si hay personajes
+  if (!characters || characters.length === 0) {
+    errorMessage.textContent = 'No se pudieron cargar los personajes. Intenta recargar la página.';
+    return;
   }
 
+  // Mostrar cada personaje
   characters.forEach(character => {
-      const cardClone = template.cloneNode(true);
-      cardClone.style.display = "block"; // Hacer visible la tarjeta clonada
-      cardClone.querySelector(".card-image").src = `${character.thumbnail.path}.${character.thumbnail.extension}`;
-      cardClone.querySelector(".card-image").alt = character.name;
-      cardClone.querySelector(".card-name").textContent = character.name;
-      cardClone.querySelector(".card-description").textContent = character.description || "No hay descripción disponible.";
-      cardClone.querySelector(".card-comics").textContent = character.comics.available || 0;
-      cardClone.querySelector(".card-universe").textContent = character.universe || translations['es']['character.universe616'];
-      
-      cardContainer.appendChild(cardClone);
+    // Validación de datos
+    if (!character || !character.name) return;
+
+    const card = document.createElement('div');
+    card.className = 'character-card';
+
+    // Imagen (con validación)
+    const img = document.createElement('img');
+    img.className = 'character-image';
+    img.alt = character.name;
+    
+    if (character.thumbnail) {
+      img.src = `${character.thumbnail.path || ''}.${character.thumbnail.extension || 'jpg'}`.replace('http://', 'https://');
+    } else {
+      img.src = 'https://via.placeholder.com/300x450?text=No+Image';
+    }
+
+    // Información del personaje
+    const info = document.createElement('div');
+    info.className = 'character-info';
+
+    const name = document.createElement('h3');
+    name.className = 'character-name';
+    name.textContent = character.name;
+
+    const comicsCount = document.createElement('p');
+    comicsCount.className = 'character-comics';
+    comicsCount.textContent = `${character.comics?.available || 0} cómics disponibles`;
+
+    info.appendChild(name);
+    info.appendChild(comicsCount);
+    card.appendChild(img);
+    card.appendChild(info);
+    cardsGrid.appendChild(card);
   });
 }
-/* The above code is written in JavaScript and it is loading characters when the page is loaded. It is
-using an event listener to wait for the DOM content to be fully loaded, then it is fetching all
-characters asynchronously using the `fetchAllCharacters` function and displaying them on the page
-using the `displayCharacters` function. */
 
-// Cargar personajes al cargar la página
+// Inicialización
 document.addEventListener('DOMContentLoaded', async () => {
-    const characters = await fetchCharacters();
+  try {
+    const characters = await fetchAllCharacters();
     displayCharacters(characters);
-});
-
-/**
- * The function `displayError` is used to show error messages on a webpage with appropriate styling.
- * @param message - The `message` parameter in the `displayError` function is a string that represents
- * the error message that you want to display on the webpage. This message will be shown to the user
- * when an error occurs and is passed as an argument to the function when calling it.
- */
-// Función para mostrar errores en la página
-function displayError(message) {
-  const errorContainer = document.getElementById('error-container');
-  const errorMessage = document.getElementById('error-message');
-  errorMessage.textContent = message;
-  errorContainer.style.display = "block"; // Mostrar el error con estilos adecuados
-}
-
-
-
-/* The above code is adding an event listener to a search button with the id 'search'. When the button
-is clicked, it retrieves the value entered in an input field with the id 'buscador', trims any
-whitespace from the value, and stores it in the searchTerm variable. If the searchTerm is not empty,
-it then fetches all characters asynchronously using the fetchAllCharacters function and displays the
-characters using the displayCharacters function. If the searchTerm is empty, it displays an error
-message saying "Por favor, ingresa un nombre de personaje." */
-// Actualizar evento de búsqueda
-document.getElementById('search').addEventListener('click', async () => {
-  const searchTerm = document.getElementById('buscador').value.trim();
-  if (searchTerm) {
-      const characters = await fetchCharacters(searchTerm);
-      displayCharacters(characters);
-  } else {
-      displayError('Por favor, ingresa un nombre de personaje.');
+  } catch (error) {
+    console.error("Error al inicializar:", error);
+    document.getElementById('error-message').textContent = 
+      'Error al cargar los personajes. Por favor, inténtalo más tarde.';
   }
 });
