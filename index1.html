@@ -10,6 +10,9 @@
     
 </head>
 <body>
+    <!-- The `<header>` section you provided is creating the header of a web page for a Marvel Universe
+    Explorer application. Here's a breakdown of its components: 
+     -->
     <header>
         <div class="header-content container">
             <h1 class="marvel-logo" data-i18n="header.title"></h1>
@@ -30,6 +33,8 @@
           </div>
     </header>
     
+  <!-- The code you provided is creating a section within the main content of a web page for filtering
+  characters in a Marvel Universe Explorer application. -->
     <main class="container">
         
           <div class="universe-filters">
@@ -44,12 +49,35 @@
                 <button class="filter-button" data-universe="noir" data-i18n="filters.noir"></button>
             </div>
         </div>
-        <main class="container">
-            <p id="error-message"></p> <!-- Contenedor para errores -->
-            <div class="cards-grid"></div> <!-- Contenedor para personajes -->
-        </main>
+        
+        <!-- Contenedor para mostrar errores -->
+        <div id="error-container">
+            <p id="error-message"></p>
+        </div>
+            
+            <!-- The code you provided is creating a container for character cards in a Marvel Universe Explorer web
+            application. -->
+            <!-- The container is like a base for the info of the api -->
+            <!-- Contenedor para las tarjetas de personajes -->
+            <div class="cards-grid" id="card-container">
+                <!-- Plantilla de tarjeta (oculta) -->
+                <div class="card" id="card-template" style="display: none;">
+                    <img src="" alt="" class="card-image">
+                    <h3 class="card-name"></h3>
+                    <p class="card-description"></p>
+                    <p class="card-universe"></p>
+                    <p class="card-comics"></p>
+                </div>
+            </div>
+            
+
+           
+           
+
     </main>
     
+  <!-- The `<footer>` section in the provided HTML code is creating the footer of a web page for a Marvel
+  Universe Explorer application. Here's a breakdown of its components: -->
     <footer>
         <p id="datos" data-i18n="footer.developed"></p>
         <div class="copyright">

@@ -136,6 +136,15 @@ header {
     font-size: 0.9rem;
 }
 
+.character-universe {
+    font-size: 0.8rem;
+    color: var(--blanquito);
+    font-weight: bold;
+    text-transform: uppercase;
+    margin-top: 0.5rem;
+}
+
+
 footer {
     background: var(--oscurito);
     padding: 2rem 0;
@@ -363,4 +372,17 @@ footer {
     right: 20px;
     top: 0px;
     width: auto;
+}
+
+#error-container {
+    color: red;
+    font-weight: bold;
+    display: none;
+    text-align: center;
+    margin-top: 10px;
+    font-size: 1.2rem;
+    padding: 10px;
+    background-color: rgba(255, 0, 0, 0.1);
+    border: 2px solid rgba(255, 0, 0, 0.5);
+    border-radius: 5px; 
 }
