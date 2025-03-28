@@ -349,6 +349,8 @@ footer {
     outline: none;
 }
 
+ 
+
     .language-selector::after {
     content: '';
     position: absolute;

@@ -1,4 +1,5 @@
 
+
 const translations = {
   "es": {
     "header.title": "Marvel",
@@ -199,4 +200,3 @@ document.addEventListener('DOMContentLoaded', () => {
     updateLanguage(e.target.value);
   });
 });
-
