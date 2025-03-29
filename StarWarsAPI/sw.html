@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Star Wars Universe Explorer</title>
+    <link rel="icon" type="image/x-icon" href="starwarsfav.png">
+   <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <div class="header-content container">
+            <h1 class="starwars-logo" data-i18n="header.title"></h1>
+            <p class="subtitle" data-i18n="header.subtitle"></p>
+            <div class="idioma">
+                <label for="language-selector" data-i18n="idioma"></label>
+                <select id="language-selector">
+                    <option value="es">Español</option>
+                    <option value="en">English</option>
+                    <option value="fr">Français</option>
+                    <option value="ro">Română</option>
+                </select>
+            </div>
+        </div>
+        <div class="barrabuscador">
+            <input type="text" id="buscador" data-i18n-placeholder="search.placeholder" />
+            <button type="button" id="search" data-i18n="search.button"></button>
+        </div>
+    </header>
+    
+    <main class="container">
+        <div class="universe-filters">
+            <h2 class="filters-title" data-i18n="filters.title"></h2>
+            <div class="filter-buttons">
+                <button class="filter-button active" data-resource="all" data-i18n="filters.all"></button>
+                <button class="filter-button" data-resource="people" data-i18n="filters.people"></button>
+                <button class="filter-button" data-resource="planets" data-i18n="filters.planets"></button>
+                <button class="filter-button" data-resource="starships" data-i18n="filters.starships"></button>
+                <button class="filter-button" data-resource="vehicles" data-i18n="filters.vehicles"></button>
+                <button class="filter-button" data-resource="species" data-i18n="filters.species"></button>
+                <button class="filter-button" data-resource="films" data-i18n="filters.films"></button>
+            </div>
+        </div>
+            
+        <div id="loading" class="loading" style="display: none;" data-i18n="loading"></div>
+        <div id="error-container"></div>
+        
+        <div id="card-container"></div>
+        
+        <div class="pagination">
+            <button id="prev-page" data-i18n="pagination.prev" style="display: none;"></button>
+            <button id="next-page" data-i18n="pagination.next" style="display: none;"></button>
+        </div>
+    </main>
+    
+    <footer>
+        <p id="datos" data-i18n="footer.developed"></p>
+        <div class="copyright">
+            <p data-i18n="footer.rights"></p>
+            <p data-i18n="footer.starwarsInfo"></p>
+            <p data-i18n="footer.educational"></p>
+        </div>
+    </footer>
+    <script src="main.js"></script>
+</body>
+</html>
+
+    
