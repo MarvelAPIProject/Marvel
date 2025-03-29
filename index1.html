@@ -5,16 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Marvel Universe Explorer</title>
     <link rel="icon" type="image/x-icon" href="marvelfav.png">
-    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.9-1/crypto-js.js"></script>
     <link rel="stylesheet" href="style.css">
     
 </head>
 <body>
+    <!-- La sección `<header>` está creando el encabezado de una página web para la aplicación Marvel Universe Explorer. 
+    Aquí tienes un desglose de sus componentes: -->
     <header>
         <div class="header-content container">
             <h1 class="marvel-logo" data-i18n="header.title"></h1>
             <p class="subtitle" data-i18n="header.subtitle"></p>
-            <div class ="idioma">
+            <div class="idioma">
                 <label for="language-selector" data-i18n="idioma"></label>
                 <select id="language-selector">
                     <option value="es">Español</option>
@@ -26,13 +28,15 @@
         </div>
         <div class="barrabuscador">
             <input type="text" id="buscador" data-i18n-placeholder="search.placeholder" />
-            <button type="button" id="search" data-i18n="search.button" ></button>
-          </div>
+            <button type="button" id="search" data-i18n="search.button"></button>
+        </div>
     </header>
     
+    <!-- El código a continuación está creando una sección dentro del contenido principal de la página web 
+    para filtrar personajes en la aplicación Marvel Universe Explorer. -->
     <main class="container">
         
-          <div class="universe-filters">
+        <div class="universe-filters">
             <h2 class="filters-title" data-i18n="filters.title"></h2>
             <div class="filter-buttons">
                 <button class="filter-button active" data-universe="all" data-i18n="filters.all"></button>
@@ -44,22 +48,35 @@
                 <button class="filter-button" data-universe="noir" data-i18n="filters.noir"></button>
             </div>
         </div>
-        <div class="cards-grid">
+        
             <div class="character-card" data-universe="616 mcu">
                 <div class="universe-badge" data-i18n="character.universe616"></div>
-                <img src="spiderman.jpg" alt="Spiderman" class="character-image">
+                <img src="ironman.jpg" alt="Ironman" class="character-image">
                 <div class="character-info">
-                    <h3 class="character-name">Spider-Man</h3>
-                    <p class="character-comics" data-i18n="character.comicsCount" data-comics="1500"></p>
+                    <h3 class="character-name">Iron Man</h3>
+                    <p class="character-comics" data-i18n="character.comicsCount" data-comics="1200"></p>
                 </div>
             </div>
-        
-    
         </div>
             
+        <!-- El código a continuación está creando un contenedor para las tarjetas de personajes 
+        en la aplicación web Marvel Universe Explorer. -->
+        <!-- El contenedor sirve como base para la información obtenida de la API -->
+        <!-- Contenedor para las tarjetas de personajes -->
+        <div class="cards-grid" id="card-container">
+            <!-- Plantilla de tarjeta (oculta) -->
+            <div class="card" id="card-template" style="display: none;">
+                <img src="" alt="" class="card-image">
+                <h3 class="card-name"></h3>
+                <p class="card-description"></p>
+                <p class="card-universe"></p>
+                <p class="card-comics"></p>
+            </div>
         </div>
     </main>
     
+    <!-- La sección `<footer>` en el código HTML está creando el pie de página de la aplicación Marvel Universe Explorer. 
+    Aquí tienes un desglose de sus componentes: -->
     <footer>
         <p id="datos" data-i18n="footer.developed"></p>
         <div class="copyright">
