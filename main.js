@@ -217,9 +217,12 @@ function generateHash(ts) {
 
 // Función mejorada para obtener personajes
 async function fetchAllCharacters() {
-  const ts = Date.now().toString();
+  const ts = Date.now().toString(); // Timestamp actual
+  // Generar el hash usando CryptoJS
   const hash = generateHash(ts);
   const url = `${CONFIG.baseUrl}/characters?limit=${CONFIG.defaultLimit}&ts=${ts}&apikey=${CONFIG.publicKey}&hash=${hash}`;
+
+  console.log(url);
 
   try {
     // Intenta con la API Marvel primero
