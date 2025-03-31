@@ -147,8 +147,12 @@ footer {
     padding: 2rem 0;
     text-align: center;
     width: 100%;
+<<<<<<< HEAD
     margin-top: auto;
     position: relative;
+=======
+    margin-top: 100px;
+>>>>>>> d010bb7a8fed668402b8f65e0e08a27d6acb6839
     bottom: 0px;
     z-index: 2;
     
