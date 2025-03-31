@@ -135,6 +135,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
+    
+
     // State variables
     let currentLanguage = 'es';
     let currentResource = 'all';

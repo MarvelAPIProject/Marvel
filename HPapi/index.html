@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>El Mundo Mágico de Harry Potter</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <h1 class="hp-logo">Harry Potter</h1>
+                <p class="subtitle">Base de Datos del Mundo Mágico</p>
+            </div>
+            <div class="idioma">
+                <div class="language-selector-container">
+                    <label for="language-selector" class="language-label">Idioma:</label>
+                    <select id="language-selector">
+                        <option value="es" selected>Español</option>
+                        <option value="en">English</option>
+                        <option value="fr">Français</option>
+                        <option value="es">Romana</option>
+
+                    </select>
+                </div>
+            </div>
+        </div>
+    </header>
+    <main>
+        <div class="container">
+            <div class="barrabuscador">
+                <input type="text" id="buscador" placeholder="Buscar en el Mundo Mágico...">
+                <button id="search">Buscar</button>
+            </div>
+           
+            <div id="error-container">¡Error al recuperar datos del reino mágico!</div>
+           
+            <div class="category-filters">
+                <h3 class="filters-title">Filtrar por Categoría</h3>
+                <div class="filter-buttons">
+                    <button class="filter-button active" data-filter="all">Todos</button>
+                    <button class="filter-button" data-filter="characters">Personajes</button>
+                    <button class="filter-button" data-filter="houses">Casas</button>
+                    <button class="filter-button" data-filter="books">Libros</button>
+                </div>
+            </div>
+           
+            <div class="cards-grid" id="cards-container">
+                <!-- Las tarjetas se insertarán dinámicamente aquí mediante JavaScript -->
+            </div>
+           
+            <div id="pagination-container">
+                <button id="prev-page" class="pagination-button" disabled>Anterior</button>
+                <span class="pagination-info">Página <span id="current-page">1</span> de <span id="total-pages">1</span></span>
+                <button id="next-page" class="pagination-button">Siguiente</button>
+            </div>
+        </div>
+    </main>
+    <footer>
+        <div class="container">
+            <div class="copyright">
+                <p>El Mundo Mágico de Harry Potter &copy; <span id="current-year"></span></p>
+                <p>Creado por CSS group</p>
+                <p>Datos proporcionados por <a href="https://hp-api.onrender.com/" target="_blank">HP-API</a></p>
+            </div>
+        </div>
+    </footer>
+    <script src="main.js"></script>
+</body>
+</html>

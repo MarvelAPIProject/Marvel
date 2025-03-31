@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game of Thrones Explorer</title>
+    <link rel="icon" type="image/x-icon" href="gotfav.png">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <div class="header-content container">
+            <h1 class="got-logo" data-i18n="header.title">GAME OF THRONES</h1>
+            <p class="subtitle" data-i18n="header.subtitle">Explora el mundo de hielo y fuego</p>
+            <div class="idioma">
+                <label for="language-selector" data-i18n="idioma">Idioma:</label>
+                <select id="language-selector">
+                    <option value="es">🇪🇸  Español</option>
+                    <option value="en">🇬🇧  English</option>
+                    <option value="fr">🇫🇷  Français</option>
+                    <option value="ro">🇷🇴  Română</option>
+                </select>
+            </div>
+        </div>
+        <div class="barrabuscador">
+            <input type="text" id="buscador" data-i18n-placeholder="search.placeholder" placeholder="Buscar personajes, casas o libros..." />
+            <button type="button" id="search" data-i18n="search.button">BUSCAR</button>
+        </div>
+    </header>
+    
+    <main class="container">
+        <div class="category-filters">
+            <h2 class="filters-title" data-i18n="filters.title">Explorar por categoría</h2>
+            <div class="filter-buttons">
+                <button class="filter-button active" data-category="all" data-i18n="filters.all">Todos</button>
+                <button class="filter-button" data-category="characters" data-i18n="filters.characters">Personajes</button>
+                <button class="filter-button" data-category="houses" data-i18n="filters.houses">Casas</button>
+                <button class="filter-button" data-category="books" data-i18n="filters.books">Libros</button>
+            </div>
+        </div>
+        
+        <div id="error-container">Error al cargar datos. Inténtalo de nuevo.</div>
+        
+        <!-- Contenedor para las tarjetas -->
+        <div class="cards-grid" id="card-container">
+            <!-- Las tarjetas se generarán dinámicamente con JavaScript -->
+        </div>
+
+        <div id="pagination-container" class="pagination-container"></div><br>
+
+    </main>
+    
+    <footer>
+        <p id="datos" data-i18n="footer.developed">Desarrollado por el grupo CSS</p>
+        <div class="copyright">
+            <p data-i18n="footer.rights">© 2025 Game of Thrones Explorer</p>
+            <p data-i18n="footer.info">La información proviene de An API of Ice and Fire.</p>
+            <p data-i18n="footer.educational">Esta aplicación tiene fines educativos.</p>
+        </div>
+    </footer>
+
+    <script src="main.js"></script>
+</body>
+</html>
