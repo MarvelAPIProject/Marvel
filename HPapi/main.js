@@ -22,28 +22,6 @@ const currentYearSpan = document.getElementById('current-year');
 
 // Translations for multilingual support
 const translations = {
-    'en': {
-        'searchPlaceholder': 'Search the Wizarding World...',
-        'searchButton': 'Search',
-        'filters': {
-            'all': 'All',
-            'characters': 'Characters',
-            'houses': 'Houses',
-            'books': 'Books'
-        },
-        'pagination': {
-            'prev': 'Previous',
-            'next': 'Next',
-            'page': 'Page',
-            'of': 'of'
-        },
-        'error': 'Error retrieving data from the magical realm!',
-        'footer': {
-            'copyright': 'The Wizarding World of Harry Potter',
-            'createdBy': 'Created by',
-            'dataProvided': 'Data provided by'
-        }
-    },
     'es': {
         'searchPlaceholder': 'Buscar en el Mundo Mágico...',
         'searchButton': 'Buscar',
@@ -64,6 +42,28 @@ const translations = {
             'copyright': 'El Mundo Mágico de Harry Potter',
             'createdBy': 'Creado por',
             'dataProvided': 'Datos proporcionados por'
+        }
+    },
+    'en': {
+        'searchPlaceholder': 'Search the Wizarding World...',
+        'searchButton': 'Search',
+        'filters': {
+            'all': 'All',
+            'characters': 'Characters',
+            'houses': 'Houses',
+            'books': 'Books'
+        },
+        'pagination': {
+            'prev': 'Previous',
+            'next': 'Next',
+            'page': 'Page',
+            'of': 'of'
+        },
+        'error': 'Error retrieving data from the magical realm!',
+        'footer': {
+            'copyright': 'The Wizarding World of Harry Potter',
+            'createdBy': 'Created by',
+            'dataProvided': 'Data provided by'
         }
     },
     'fr': {
@@ -87,7 +87,30 @@ const translations = {
             'createdBy': 'Créé par',
             'dataProvided': 'Données fournies par'
         }
+    },
+    'ro': {
+    'searchPlaceholder': 'Caută în Lumea Magică...',
+    'searchButton': 'Caută',
+    'filters': {
+        'all': 'Toate',
+        'characters': 'Personaje',
+        'houses': 'Case',
+        'books': 'Cărți'
+    },
+    'pagination': {
+        'prev': 'Anterior',
+        'next': 'Următor',
+        'page': 'Pagina',
+        'of': 'din'
+    },
+    'error': 'Eroare la recuperarea datelor din tărâmul magic!',
+    'footer': {
+        'copyright': 'Lumea Magică a lui Harry Potter',
+        'createdBy': 'Creat de',
+        'dataProvided': 'Date furnizate de'
     }
+}
+    
 };
 
 // Initialize the application
