@@ -236,7 +236,7 @@ async function fetchCharacters(searchTerm = '') {
     ts: ts.toString(),
     apikey: publicKey,
     hash: hash,
-    limit: '5'
+    limit: '9'
   });
 
   // Añadir búsqueda por nombre si está presente
@@ -313,13 +313,51 @@ function displayCharacters(characters) {
 
   characters.forEach(character => {
       const cardClone = template.cloneNode(true);
-      cardClone.style.display = "block"; // Hacer visible la tarjeta clonada
-      cardClone.querySelector(".card-image").src = `${character.thumbnail.path}.${character.thumbnail.extension}`;
-      cardClone.querySelector(".card-image").alt = character.name;
-      cardClone.querySelector(".card-name").textContent = character.name;
-      cardClone.querySelector(".card-description").textContent = character.description || "No hay descripción disponible.";
-      cardClone.querySelector(".card-comics").textContent = character.comics.available || 0;
-      cardClone.querySelector(".card-universe").textContent = character.universe || translations['es']['character.universe616'];
+      cardClone.style.display = "block";
+      cardClone.removeAttribute('id'); // Elimina el ID duplicado
+      
+      // Elementos de la tarjeta
+      const img = cardClone.querySelector(".character-image");
+      const name = cardClone.querySelector(".character-name");
+      const description = cardClone.querySelector(".character-description");
+      const comicsCount = cardClone.querySelector(".character-comics");
+      const universe = cardClone.querySelector(".character-universe");
+      const universeBadge = cardClone.querySelector(".universe-badge");
+
+      // Configurar la imagen
+      if (character.thumbnail && character.thumbnail.path) {
+          img.src = `${character.thumbnail.path}.${character.thumbnail.extension}`;
+          img.alt = character.name || "Personaje Marvel";
+          
+          if (character.thumbnail.path.includes('image_not_available')) {
+              img.classList.add('no-image');
+          }
+      } else {
+          // Si no hay imagen disponible
+          img.classList.add('no-image');
+          img.alt = "Imagen no disponible";
+      }
+
+      // Configurar el nombre
+      name.textContent = character.name || "Nombre desconocido";
+
+      // Configurar la descripción
+      if (character.description) {
+          description.textContent = character.description;
+      } else {
+          description.textContent = "No hay descripción disponible.";
+          description.classList.add('no-description');
+      }
+
+      // Configurar el conteo de cómics
+      const comicsAvailable = character.comics?.available || 0;
+      comicsCount.textContent = `${comicsAvailable} ${comicsAvailable === 1 ? 'cómic' : 'cómics'}`;
+      comicsCount.setAttribute('data-comics', comicsAvailable);
+
+      // Configurar el universo
+      const universeText = character.universe || translations[document.getElementById('language-selector-improved').value || 'es']['character.universe616'];
+      universe.textContent = universeText;
+      universeBadge.textContent = universeText;
       
       cardContainer.appendChild(cardClone);
   });

@@ -59,17 +59,22 @@
         <!-- El contenedor sirve como base para la información obtenida de la API -->
         <!-- Contenedor para las tarjetas de personajes -->
         <div class="cards-grid" id="card-container">
-            <!-- Plantilla de tarjeta (oculta) -->
-            <div class="card" id="card-template" style="display: none;">
-                <img src="" alt="" class="card-image">
-                <h3 class="card-name"></h3>
-                <p class="card-description"></p>
-                <p class="card-universe"></p>
-                <p class="card-comics"></p>
+                <!-- Plantilla de tarjeta (oculta) -->
+        <div class="character-card" id="card-template" style="display: none;">
+            <div class="character-image-container">
+                <img src="" alt="" class="character-image">
             </div>
+            <div class="character-info">
+                <h3 class="character-name"></h3>
+                <p class="character-description"></p>
+                <div class="character-meta">
+                    <span class="character-comics"></span>
+                    <span class="character-universe"></span>
+                </div>
+            </div>
+            <div class="universe-badge"></div>
         </div>
-    </main>
-    
+            </div>
     <!-- La sección `<footer>` en el código HTML está creando el pie de página de la aplicación Marvel Universe Explorer. 
     Aquí tienes un desglose de sus componentes: -->
     <footer>

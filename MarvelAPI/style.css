@@ -70,80 +70,221 @@ header {
     font-style: italic;
 }
 
+/* ========== ESTILOS MEJORADOS PARA TARJETAS ========== */
 .cards-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 2rem;
+    padding: 1rem;
 }
 
 .character-card {
-    background: var(--oscurito);
-    border-radius: 12px;
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
-    transition: transform 0.4s ease, box-shadow 0.4s ease;
+    background: linear-gradient(145deg, #2a2a2a, #1e1e1e);
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     position: relative;
-    height: 380px;
+    height: 420px;
     display: flex;
     flex-direction: column;
-    margin: 2rem;
+    border: 1px solid #333;
     z-index: 1;
+}
+
+.character-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(to bottom, transparent 60%, rgba(0,0,0,0.8) 90%);
+    z-index: 2;
+    pointer-events: none;
 }
 
 .character-card:hover {
     transform: translateY(-10px) scale(1.03);
-    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.5), 0 0 20px rgba(230, 36, 41, 0.3);
+    box-shadow: 0 15px 35px rgba(230, 36, 41, 0.4), 
+                0 5px 15px rgba(0, 0, 0, 0.7);
+    border-color: var(--rojito);
 }
 
-.character-card:hover .character-image {
-    transform: scale(1.1);
-}
-
-.character-card:hover .character-name {
-    color: var(--rojito);
-    transform: translateX(5px);
-}
-
-.character-card:hover .universe-badge {
-    top: 10px;
-    right: 10px;
+.character-image-container {
+    height: 280px;
+    overflow: hidden;
+    position: relative;
 }
 
 .character-image {
     width: 100%;
-    height: 280px;
+    height: 100%;
     object-fit: cover;
-    transition: transform 0.5s ease;
-    transform-origin: center;
+    transition: transform 0.6s ease, filter 0.3s ease;
+    transform-origin: center center;
+}
+
+.character-card:hover .character-image {
+    transform: scale(1.1);
+    filter: brightness(1.1);
 }
 
 .character-info {
-    padding: 1.2rem;
+    padding: 1.5rem;
     flex: 1;
     display: flex;
     flex-direction: column;
-    justify-content: space-around;
+    justify-content: space-between;
+    position: relative;
+    z-index: 3;
 }
 
 .character-name {
-    font-size: 1.4rem;
-    font-weight: bold;
+    font-size: 1.5rem;
+    font-weight: 800;
     margin-bottom: 0.5rem;
-    transition: color 0.3s ease, transform 0.3s ease;
+    color: var(--blanquito);
+    transition: all 0.3s ease;
+    position: relative;
     display: inline-block;
+    line-height: 1.2;
+}
+
+.character-name::after {
+    content: '';
+    position: absolute;
+    bottom: -5px;
+    left: 0;
+    width: 0;
+    height: 3px;
+    background-color: var(--rojito);
+    transition: width 0.4s ease;
+}
+
+.character-card:hover .character-name::after {
+    width: 100%;
+}
+
+.character-description {
+    color: #bbb;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    margin: 0.8rem 0;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-height: 4.5rem;
+}
+
+.no-description {
+    font-style: italic;
+    color: #777;
+}
+
+.character-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: auto;
+    padding-top: 0.8rem;
+    border-top: 1px solid #333;
 }
 
 .character-comics {
-    color: #aaa;
+    background-color: rgba(230, 36, 41, 0.2);
+    color: var(--blanquito);
+    padding: 0.3rem 0.8rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    transition: all 0.3s ease;
+}
+
+.character-card:hover .character-comics {
+    background-color: var(--rojito);
+    transform: translateY(-2px);
+}
+
+.character-comics::before {
+    content: '📚';
+    margin-right: 5px;
     font-size: 0.9rem;
 }
 
 .character-universe {
-    font-size: 0.8rem;
+    font-size: 0.75rem;
     color: var(--blanquito);
     font-weight: bold;
     text-transform: uppercase;
-    margin-top: 0.5rem;
+    letter-spacing: 1px;
+    background-color: rgba(0, 0, 0, 0.7);
+    padding: 0.3rem 0.8rem;
+    border-radius: 4px;
+    border-left: 3px solid var(--rojito);
 }
 
+/* Badge de universo flotante */
+.universe-badge {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background-color: rgba(0, 0, 0, 0.85);
+    color: var(--blanquito);
+    padding: 0.4rem 0.8rem;
+    border-radius: 20px;
+    font-size: 0.7rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+    border: 1px solid #444;
+    z-index: 3;
+    transition: all 0.3s ease;
+}
+
+.character-card:hover .universe-badge {
+    transform: translateY(-5px);
+    background-color: var(--rojito);
+    border-color: var(--rojito);
+}
+
+/* Efecto de brillo al hacer hover */
+.character-card::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(circle at center, rgba(230, 36, 41, 0.1) 0%, transparent 70%);
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    pointer-events: none;
+    z-index: 2;
+}
+
+.character-card:hover::after {
+    opacity: 1;
+}
+
+/* Estilo para cuando no hay imagen */
+.no-image {
+    background: linear-gradient(135deg, #333, #111);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.no-image::before {
+    content: '🦸';
+    font-size: 3rem;
+    opacity: 0.3;
+}
 
 footer {
     background: var(--oscurito);
