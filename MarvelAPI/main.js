@@ -236,7 +236,7 @@ async function fetchCharacters(searchTerm = '') {
     ts: ts.toString(),
     apikey: publicKey,
     hash: hash,
-    limit: '9'
+    limit: '10'
   });
 
   // Añadir búsqueda por nombre si está presente
@@ -319,7 +319,6 @@ function displayCharacters(characters) {
       // Elementos de la tarjeta
       const img = cardClone.querySelector(".character-image");
       const name = cardClone.querySelector(".character-name");
-      const description = cardClone.querySelector(".character-description");
       const comicsCount = cardClone.querySelector(".character-comics");
       const universe = cardClone.querySelector(".character-universe");
       const universeBadge = cardClone.querySelector(".universe-badge");
@@ -341,14 +340,6 @@ function displayCharacters(characters) {
       // Configurar el nombre
       name.textContent = character.name || "Nombre desconocido";
 
-      // Configurar la descripción
-      if (character.description) {
-          description.textContent = character.description;
-      } else {
-          description.textContent = "No hay descripción disponible.";
-          description.classList.add('no-description');
-      }
-
       // Configurar el conteo de cómics
       const comicsAvailable = character.comics?.available || 0;
       comicsCount.textContent = `${comicsAvailable} ${comicsAvailable === 1 ? 'cómic' : 'cómics'}`;
@@ -356,7 +347,6 @@ function displayCharacters(characters) {
 
       // Configurar el universo
       const universeText = character.universe || translations[document.getElementById('language-selector-improved').value || 'es']['character.universe616'];
-      universe.textContent = universeText;
       universeBadge.textContent = universeText;
       
       cardContainer.appendChild(cardClone);
