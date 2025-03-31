@@ -86,7 +86,6 @@ header {
     flex-direction: column;
     margin: 2rem;
     z-index: 1;
-    width: 280px;
 }
 
 .character-card:hover {
@@ -152,7 +151,6 @@ footer {
     text-align: center;
     width: 100%;
     margin-top: auto;
-   
 }
 
 .barrabuscador {
@@ -351,8 +349,6 @@ footer {
     box-shadow: 0 0 8px rgba(230, 36, 41, 0.4);
     outline: none;
 }
-
- 
 
 .language-selector::after {
     content: '';
