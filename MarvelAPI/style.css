@@ -85,7 +85,7 @@ header {
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
     transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     position: relative;
-    height: 420px;
+    height: 440px;
     display: flex;
     flex-direction: column;
     border: 1px solid #333;
@@ -148,7 +148,8 @@ header {
     transition: all 0.3s ease;
     position: relative;
     display: inline-block;
-    line-height: 1.2;
+    height: 4rem;
+
 }
 
 .character-name::after {
