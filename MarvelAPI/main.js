@@ -14,7 +14,7 @@ const translations = {
     "filters.spider": "Spider-Verse (1048)",
     "filters.noir": "Marvel Noir (90214)",
     "character.universe616": "Universo 616",
-    "character.comicsCount": "{count} cómics ",
+    "character.comicsCount": "{count} cómics disponibles",
     "footer.developed": "Desarrollado por el grupo CSS",
     "footer.rights": "© 2025 MARVEL. Todos los derechos reservados.",
     "footer.marvelInfo": "Los personajes y logotipos de Marvel son propiedad de <a href=\"https://developer.marvel.com/\" target=\"_blank\">Marvel Entertainment</a>",
@@ -39,7 +39,7 @@ const translations = {
     "filters.spider": "Spider-Verse (1048)",
     "filters.noir": "Marvel Noir (90214)",
     "character.universe616": "Universe 616",
-    "character.comicsCount": "{count} comics ",
+    "character.comicsCount": "{count} comics available",
     "footer.developed": "Developed by CSS group",
     "footer.rights": "© 2025 MARVEL. All rights reserved.",
     "footer.marvelInfo": "Marvel characters and logos are property of <a href=\"https://developer.marvel.com/\" target=\"_blank\">Marvel Entertainment</a>",
@@ -64,7 +64,7 @@ const translations = {
     "filters.spider": "Spider-Verse (1048)",
     "filters.noir": "Marvel Noir (90214)",
     "character.universe616": "Univers 616",
-    "character.comicsCount": "{count} bandes dessinées ",
+    "character.comicsCount": "{count} bandes dessinées disponibles",
     "footer.developed": "Développé par le groupe CSS",
     "footer.rights": "© 2025 MARVEL. Tous droits réservés.",
     "footer.marvelInfo": "Les personnages et logos Marvel sont la propriété de <a href=\"https://developer.marvel.com/\" target=\"_blank\">Marvel Entertainment</a>",
@@ -89,7 +89,7 @@ const translations = {
     "filters.spider": "Spider-Verse (1048)",
     "filters.noir": "Marvel Noir (90214)",
     "character.universe616": "Universul 616",
-    "character.comicsCount": "{count} benzi desenate ",
+    "character.comicsCount": "{count} benzi desenate disponibile",
     "footer.developed": "Dezvoltat de grupul CSS",
     "footer.rights": "© 2025 MARVEL. Toate drepturile rezervate.",
     "footer.marvelInfo": "Personajele și logo-urile Marvel sunt proprietatea <a href=\"https://developer.marvel.com/\" target=\"_blank\">Marvel Entertainment</a>",
@@ -118,46 +118,39 @@ function loadCryptoJS() {
 }
 
 // Style for the language selector
-const style = document.createElement('style');
-style.textContent = `
-  .language-selector-container {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin: 10px 0;
-  }
-  
-  .language-selector {
-    padding: 6px 10px;
-    border-radius: 5px;
-    border: 1px solid #ddd;
-    background-color: white;
-    cursor: pointer;
-    font-size: 14px;
-  }
-  
-  .language-label {
-    font-weight: 500;
-  }
-`;
-document.head.appendChild(style);
+
 
 // Create improved language selector
 function createLanguageSelector() {
-  // Get existing language selector and its parent
-  const existingSelector = document.getElementById('language-selector');
-  if (!existingSelector) {
-    console.error('Language selector element not found');
-    // Create a new element if it doesn't exist
-    const header = document.querySelector('header') || document.body;
-    const container = document.createElement('div');
-    container.id = 'language-selector';
-    container.className = 'language-selector-wrapper';
-    header.appendChild(container);
-    return createLanguageSelector(); // Try again
+  // Check if we already created the improved selector
+  if (document.getElementById('language-selector-improved')) {
+    return document.getElementById('language-selector-improved');
   }
   
-  const parent = existingSelector.parentNode;
+  // Get existing language selector and its parent
+  const existingSelector = document.getElementById('language-selector');
+  let parent;
+  
+  if (!existingSelector) {
+    console.warn('Language selector element not found, creating a new one');
+    const header = document.querySelector('header');
+    
+    // Create a container for the language selector
+    const newContainer = document.createElement('div');
+    newContainer.id = 'language-selector';
+    newContainer.className = 'language-selector-wrapper';
+    
+    if (header) {
+      header.appendChild(newContainer);
+    } else {
+      // If there's no header, add it to the body
+      document.body.insertBefore(newContainer, document.body.firstChild);
+    }
+    
+    parent = newContainer.parentNode;
+  } else {
+    parent = existingSelector.parentNode;
+  }
   
   // Create new container
   const container = document.createElement('div');
@@ -188,16 +181,24 @@ function createLanguageSelector() {
     const option = document.createElement('option');
     option.value = lang.code;
     option.textContent = `${lang.flag} ${lang.name}`;
-    option.selected = lang.code === 'es'; // Default to Spanish
+    
+    // Check local storage for previously selected language
+    const savedLanguage = localStorage.getItem('selectedLanguage');
+    option.selected = lang.code === (savedLanguage || 'es');
+    
     select.appendChild(option);
   });
   
   // Build the selector
-  container.appendChild(label);
   container.appendChild(select);
   
-  // Replace the old selector
-  parent.replaceChild(container, existingSelector);
+  // Replace or add the selector
+  if (existingSelector) {
+    parent.replaceChild(container, existingSelector);
+  } else {
+    const selectorWrapper = document.getElementById('language-selector');
+    selectorWrapper.appendChild(container);
+  }
   
   return select;
 }
@@ -236,8 +237,10 @@ function updateLanguage(lang) {
   // Handle special case for comics count
   document.querySelectorAll('[data-comics]').forEach(element => {
     const count = element.getAttribute('data-comics');
-    const template = translations[lang]['character.comicsCount'];
-    element.textContent = template.replace('{count}', count);
+    if (translations[lang]['character.comicsCount']) {
+      const template = translations[lang]['character.comicsCount'];
+      element.textContent = template.replace('{count}', count);
+    }
   });
   
   // Update document title
@@ -256,16 +259,30 @@ function updatePaginationText() {
   
   if (pageInfo && languageSelector && typeof totalCharacters !== 'undefined' && typeof currentPage !== 'undefined' && typeof charactersPerPage !== 'undefined') {
     const currentLang = languageSelector.value || 'es';
-    const totalPages = Math.ceil(totalCharacters / charactersPerPage);
+    const totalPages = Math.ceil(totalCharacters / charactersPerPage) || 1; // Prevent division by zero
     
-    const paginationTranslations = {
-      'es': `Página ${currentPage} de ${totalPages} (${totalCharacters} personajes)`,
-      'en': `Page ${currentPage} of ${totalPages} (${totalCharacters} characters)`,
-      'fr': `Page ${currentPage} sur ${totalPages} (${totalCharacters} personnages)`,
-      'ro': `Pagina ${currentPage} din ${totalPages} (${totalCharacters} personaje)`
-    };
+    // Use translations from the global translations object
+    let template = '';
     
-    pageInfo.textContent = paginationTranslations[currentLang];
+    if (translations[currentLang] && 
+        translations[currentLang]['pagination.page'] && 
+        translations[currentLang]['pagination.of'] && 
+        translations[currentLang]['pagination.characters']) {
+      
+      template = `${translations[currentLang]['pagination.page']} ${currentPage} ${translations[currentLang]['pagination.of']} ${totalPages} (${totalCharacters} ${translations[currentLang]['pagination.characters']})`;
+    } else {
+      // Fallback translations
+      const paginationTranslations = {
+        'es': `Página ${currentPage} de ${totalPages} (${totalCharacters} personajes)`,
+        'en': `Page ${currentPage} of ${totalPages} (${totalCharacters} characters)`,
+        'fr': `Page ${currentPage} sur ${totalPages} (${totalCharacters} personnages)`,
+        'ro': `Pagina ${currentPage} din ${totalPages} (${totalCharacters} personaje)`
+      };
+      
+      template = paginationTranslations[currentLang] || paginationTranslations['es'];
+    }
+    
+    pageInfo.textContent = template;
   }
 }
 
@@ -284,7 +301,7 @@ async function generateHash(ts) {
 
 // Pagination and filter variables
 let currentPage = 1;
-const charactersPerPage = 10;
+const charactersPerPage = 12;
 let totalCharacters = 0;
 let currentSearchTerm = '';
 let currentUniverseFilter = 'all';
@@ -478,6 +495,18 @@ function displayCharacters(characters) {
   
   if (!cardContainer) {
     console.error("Card container element not found");
+    
+    // Try to create a card container if it doesn't exist
+    const main = document.querySelector('main');
+    if (main) {
+      const newContainer = document.createElement('div');
+      newContainer.id = 'card-container';
+      newContainer.className = 'character-grid';
+      main.appendChild(newContainer);
+      
+      // Try again with the new container
+      return displayCharacters(characters);
+    }
     return;
   }
   
@@ -487,8 +516,7 @@ function displayCharacters(characters) {
     console.error("Card template element not found");
     // Create a basic template if it doesn't exist
     createCardTemplate();
-    displayCharacters(characters); // Try again
-    return;
+    return displayCharacters(characters); // Try again
   }
   
   const errorContainer = document.getElementById("error-message");
@@ -498,7 +526,27 @@ function displayCharacters(characters) {
     errorContainer.textContent = "";
   }
 
+  // Store the current applied styles before clearing
+  const currentStyles = getComputedStyle(cardContainer);
+  const gridStyle = {
+    display: currentStyles.display,
+    gridTemplateColumns: currentStyles.gridTemplateColumns,
+    gap: currentStyles.gap
+  };
+
   cardContainer.innerHTML = ""; // Clear container before adding new cards
+  
+  // Reapply grid styles if they were set
+  if (gridStyle.display.includes('grid')) {
+    cardContainer.style.display = gridStyle.display;
+    cardContainer.style.gridTemplateColumns = gridStyle.gridTemplateColumns;
+    cardContainer.style.gap = gridStyle.gap;
+  } else {
+    // Default grid style if not set
+    cardContainer.style.display = 'grid';
+    cardContainer.style.gridTemplateColumns = 'repeat(auto-fill, minmax(250px, 1fr))';
+    cardContainer.style.gap = '20px';
+  }
 
   if (characters.length === 0) {
     displayError("No se encontraron personajes.");
@@ -506,8 +554,28 @@ function displayCharacters(characters) {
   }
 
   characters.forEach(character => {
-    const cardClone = template.content ? template.content.cloneNode(true).firstElementChild : template.cloneNode(true);
-    cardClone.style.display = "block";
+    // Choose the correct way to clone based on whether it's a <template> or a regular element
+    let cardClone;
+    
+    if (template.content) {
+      // It's a proper <template> element
+      cardClone = template.content.cloneNode(true);
+      cardClone = cardClone.firstElementChild;
+    } else {
+      // It's a regular DOM element
+      cardClone = template.cloneNode(true);
+      
+      // If the template has the 'display: none' style, remove it for the clone
+      if (template.style.display === 'none') {
+        cardClone.style.display = 'block';
+      }
+    }
+    
+    if (!cardClone) {
+      console.error("Failed to clone card template");
+      return;
+    }
+    
     cardClone.removeAttribute('id'); // Remove duplicate ID
     
     // Card elements
@@ -540,29 +608,37 @@ function displayCharacters(characters) {
 
     // Configure comics count
     const comicsAvailable = character.comics?.available || 0;
-    comicsCount.textContent = `${comicsAvailable} ${comicsAvailable === 1 ? 'cómic' : 'cómics'}`;
     comicsCount.setAttribute('data-comics', comicsAvailable);
-
-    // Configure universe
-    let universeText;
+    
+    // Get the current language and apply the correct text format
     const languageSelector = document.getElementById('language-selector-improved');
     const currentLang = languageSelector ? languageSelector.value : 'es';
     
+    if (translations[currentLang]['character.comicsCount']) {
+      const template = translations[currentLang]['character.comicsCount'];
+      comicsCount.textContent = template.replace('{count}', comicsAvailable);
+    } else {
+      comicsCount.textContent = `${comicsAvailable} ${comicsAvailable === 1 ? 'cómic' : 'cómics'}`;
+    }
+
+    // Configure universe
+    let universeText;
+    
     // Map universe code to display text based on filter translations
     if (character.universe === '616') {
-      universeText = translations[currentLang]['filters.universe616'].split(' ')[0];
+      universeText = translations[currentLang]['filters.universe616']?.split(' ')[0] || 'Universo 616';
     } else if (character.universe === '1610') {
-      universeText = translations[currentLang]['filters.ultimate'].split(' ')[0];
+      universeText = translations[currentLang]['filters.ultimate']?.split(' ')[0] || 'Ultimate';
     } else if (character.universe === '199999') {
       universeText = 'MCU';
     } else if (character.universe === '10005') {
       universeText = 'X-Men';
     } else if (character.universe === '1048') {
-      universeText = translations[currentLang]['filters.spider'].split(' ')[0];
+      universeText = translations[currentLang]['filters.spider']?.split(' ')[0] || 'Spider-Verse';
     } else if (character.universe === '90214') {
-      universeText = translations[currentLang]['filters.noir'].split(' ')[0];
+      universeText = translations[currentLang]['filters.noir']?.split(' ')[0] || 'Noir';
     } else {
-      universeText = translations[currentLang]['character.universe616'];
+      universeText = translations[currentLang]['character.universe616'] || 'Universo 616';
     }
     
     universeBadge.textContent = universeText;
@@ -592,6 +668,32 @@ function createCardTemplate() {
   `;
   
   document.body.appendChild(template);
+  
+  // Also check for card container and create it if missing
+  if (!document.getElementById('card-container')) {
+    const main = document.querySelector('main');
+    if (main) {
+      const container = document.createElement('div');
+      container.id = 'card-container';
+      container.className = 'character-grid';
+      container.style.display = 'grid';
+      container.style.gridTemplateColumns = 'repeat(auto-fill, minmax(250px, 1fr))';
+      container.style.gap = '20px';
+      main.appendChild(container);
+    } else {
+      // Create main if it doesn't exist
+      const main = document.createElement('main');
+      document.body.appendChild(main);
+      
+      const container = document.createElement('div');
+      container.id = 'card-container';
+      container.className = 'character-grid';
+      container.style.display = 'grid';
+      container.style.gridTemplateColumns = 'repeat(auto-fill, minmax(250px, 1fr))';
+      container.style.gap = '20px';
+      main.appendChild(container);
+    }
+  }
 }
 
 // Function to display errors
@@ -605,26 +707,36 @@ function displayError(message) {
     errorContainer = document.createElement('div');
     errorContainer.id = 'error-container';
     errorContainer.className = 'error-container';
-    errorContainer.style.padding = '10px';
-    errorContainer.style.margin = '10px 0';
-    errorContainer.style.backgroundColor = '#ffebee';
-    errorContainer.style.color = '#b71c1c';
-    errorContainer.style.borderRadius = '4px';
     
     // Find a good place to insert it
     const cardContainer = document.getElementById('card-container');
     if (cardContainer) {
       cardContainer.parentNode.insertBefore(errorContainer, cardContainer);
     } else {
-      // Fallback to body
-      document.body.appendChild(errorContainer);
+      // Find main or create it
+      let main = document.querySelector('main');
+      if (!main) {
+        main = document.createElement('main');
+        document.body.appendChild(main);
+      }
+      main.insertBefore(errorContainer, main.firstChild);
     }
   }
   
   if (!errorMessage) {
     errorMessage = document.createElement('p');
     errorMessage.id = 'error-message';
+    errorMessage.style.margin = '0';
     errorContainer.appendChild(errorMessage);
+  }
+  
+  // Translate common error messages
+  const languageSelector = document.getElementById('language-selector-improved');
+  if (languageSelector && message === 'No se encontraron personajes.') {
+    const currentLang = languageSelector.value;
+    if (currentLang === 'en') message = 'No characters found.';
+    else if (currentLang === 'fr') message = 'Aucun personnage trouvé.';
+    else if (currentLang === 'ro') message = 'Nu s-au găsit personaje.';
   }
   
   errorMessage.textContent = message;
@@ -751,20 +863,32 @@ function createPagination() {
   paginationContainer.appendChild(nextButton);
   
   // Add page info text
+  // Usar las traducciones del objeto global si están disponibles
   const pageInfo = document.createElement('div');
   pageInfo.className = 'pagination-info';
-  const languageSelector = document.getElementById('language-selector-improved');
-  const currentLang = languageSelector ? languageSelector.value : 'es';
   
-  // Create translations for pagination
-  const paginationTranslations = {
-    'es': `Página ${currentPage} de ${totalPages} (${totalCharacters} personajes)`,
-    'en': `Page ${currentPage} of ${totalPages} (${totalCharacters} characters)`,
-    'fr': `Page ${currentPage} sur ${totalPages} (${totalCharacters} personnages)`,
-    'ro': `Pagina ${currentPage} din ${totalPages} (${totalCharacters} personaje)`
-  };
+  // Obtener el idioma actual
+  const currentLang = document.getElementById('language-selector-improved')?.value || 'es';
   
-  pageInfo.textContent = paginationTranslations[currentLang];
+  // Usar traducciones basadas en las claves de i18n
+  if (translations[currentLang] && 
+      translations[currentLang]['pagination.page'] && 
+      translations[currentLang]['pagination.of'] && 
+      translations[currentLang]['pagination.characters']) {
+    
+    pageInfo.textContent = `${translations[currentLang]['pagination.page']} ${currentPage} ${translations[currentLang]['pagination.of']} ${totalPages} (${totalCharacters} ${translations[currentLang]['pagination.characters']})`;
+  } else {
+    // Usar traducciones alternativas como respaldo
+    const paginationTranslations = {
+      'es': `Página ${currentPage} de ${totalPages} (${totalCharacters} personajes)`,
+      'en': `Page ${currentPage} of ${totalPages} (${totalCharacters} characters)`,
+      'fr': `Page ${currentPage} sur ${totalPages} (${totalCharacters} personnages)`,
+      'ro': `Pagina ${currentPage} din ${totalPages} (${totalCharacters} personaje)`
+    };
+    
+    pageInfo.textContent = paginationTranslations[currentLang] || paginationTranslations['es'];
+  }
+  
   paginationContainer.appendChild(pageInfo);
 }
 
@@ -772,21 +896,72 @@ function createPagination() {
 async function goToPage(page) {
   currentPage = page;
   
-  // Show loading indicator
+  // Show loading indicator (manteniendo el layout grid)
   const cardContainer = document.getElementById("card-container");
-  cardContainer.innerHTML = '<div class="loading-spinner"></div>';
+  if (!cardContainer) return;
   
-  // Fetch characters for the selected page with current filters
-  const characters = await fetchCharacters(currentSearchTerm, page, currentUniverseFilter);
+  // Guardar estilos actuales antes de limpiar
+  const currentStyles = getComputedStyle(cardContainer);
+  const gridStyle = {
+    display: currentStyles.display,
+    gridTemplateColumns: currentStyles.gridTemplateColumns,
+    gap: currentStyles.gap
+  };
   
-  // Display characters and update pagination
-  displayCharacters(characters);
-  createPagination();
+  // Mostrar indicador de carga
+  const loadingText = document.getElementById('language-selector-improved')?.value === 'en' ? 'Loading...' :
+                      document.getElementById('language-selector-improved')?.value === 'fr' ? 'Chargement...' :
+                      document.getElementById('language-selector-improved')?.value === 'ro' ? 'Se încarcă...' :
+                      'Cargando...';
+                      
+  cardContainer.innerHTML = `<div class="loading-spinner" style="grid-column: 1 / -1; text-align: center; padding: 20px;">${loadingText}</div>`;
   
-  // Scroll to top of results
-  const mainElement = document.querySelector('main');
-  if (mainElement) {
-    mainElement.scrollIntoView({ behavior: 'smooth' });
+  // Reaplicar estilos de grid
+  if (gridStyle.display.includes('grid')) {
+    cardContainer.style.display = gridStyle.display;
+    cardContainer.style.gridTemplateColumns = gridStyle.gridTemplateColumns;
+    cardContainer.style.gap = gridStyle.gap;
+  } else {
+    // Aplicar estilos por defecto si no existe grid
+    cardContainer.style.display = 'grid';
+    cardContainer.style.gridTemplateColumns = 'repeat(auto-fill, minmax(250px, 1fr))';
+    cardContainer.style.gap = '20px';
+  }
+  
+  try {
+    // Fetch characters for the selected page with current filters
+    const characters = await fetchCharacters(currentSearchTerm, page, currentUniverseFilter);
+    
+    // Display characters and update pagination
+    displayCharacters(characters);
+    createPagination();
+    
+    // Aplicar el idioma actual a los nuevos elementos
+    const languageSelector = document.getElementById('language-selector-improved');
+    if (languageSelector) {
+      updateLanguage(languageSelector.value);
+    }
+    
+    // Scroll to top of results
+    const mainElement = document.querySelector('main');
+    if (mainElement) {
+      mainElement.scrollIntoView({ behavior: 'smooth' });
+    }
+  } catch (error) {
+    console.error("Error navegando a la página:", error);
+    
+    // Mostrar mensaje de error en el idioma actual
+    const languageSelector = document.getElementById('language-selector-improved');
+    const currentLang = languageSelector?.value || 'es';
+    
+    const errorMessages = {
+      'es': 'Error al cargar la página. Inténtalo de nuevo.',
+      'en': 'Error loading page. Please try again.',
+      'fr': 'Erreur lors du chargement de la page. Veuillez réessayer.',
+      'ro': 'Eroare la încărcarea paginii. Încercați din nou.'
+    };
+    
+    displayError(errorMessages[currentLang] || errorMessages['es']);
   }
 }
 
@@ -800,9 +975,13 @@ function setupUniverseFilters() {
   }
   
   filterButtons.forEach(button => {
-    button.addEventListener('click', async function() {
+    // Reemplazar el botón para eliminar listeners antiguos
+    const oldButton = button.cloneNode(true);
+    button.parentNode.replaceChild(oldButton, button);
+    
+    oldButton.addEventListener('click', async function() {
       // Remove active class from all buttons
-      filterButtons.forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.universe-filter').forEach(btn => btn.classList.remove('active'));
       
       // Add active class to clicked button
       this.classList.add('active');
@@ -814,81 +993,259 @@ function setupUniverseFilters() {
       // Reset to first page with new filter
       currentPage = 1;
       
-      // Show loading indicator
+      // Show loading indicator manteniendo los estilos de grid
       const cardContainer = document.getElementById("card-container");
-      cardContainer.innerHTML = '<div class="loading-spinner"></div>';
+      if (!cardContainer) return;
       
-      // Fetch characters with current search term and new filter
-      const characters = await fetchCharacters(currentSearchTerm, currentPage, filterValue);
+      // Guardar estilos actuales
+      const currentStyles = getComputedStyle(cardContainer);
+      const gridStyle = {
+        display: currentStyles.display,
+        gridTemplateColumns: currentStyles.gridTemplateColumns,
+        gap: currentStyles.gap
+      };
       
-      // Display characters and update pagination
-      displayCharacters(characters);
-      createPagination();
+      // Texto de carga en el idioma actual
+      const languageSelector = document.getElementById('language-selector-improved');
+      const currentLang = languageSelector?.value || 'es';
+      const loadingText = translations[currentLang]?.['pagination.loading'] || 'Cargando...';
+      
+      cardContainer.innerHTML = `<div class="loading-spinner" style="grid-column: 1 / -1; text-align: center; padding: 20px;">${loadingText}</div>`;
+      
+      // Reaplicar estilos de grid
+      if (gridStyle.display.includes('grid')) {
+        cardContainer.style.display = gridStyle.display;
+        cardContainer.style.gridTemplateColumns = gridStyle.gridTemplateColumns;
+        cardContainer.style.gap = gridStyle.gap;
+      } else {
+        cardContainer.style.display = 'grid';
+        cardContainer.style.gridTemplateColumns = 'repeat(auto-fill, minmax(250px, 1fr))';
+        cardContainer.style.gap = '20px';
+      }
+      
+      try {
+        // Fetch characters with current search term and new filter
+        const characters = await fetchCharacters(currentSearchTerm, currentPage, filterValue);
+        
+        // Display characters and update pagination
+        displayCharacters(characters);
+        createPagination();
+        
+        // Asegurar que el idioma se aplica correctamente
+        if (languageSelector) {
+          updateLanguage(languageSelector.value);
+        }
+      } catch (error) {
+        console.error("Error al aplicar filtro:", error);
+        displayError("Error al aplicar el filtro. Inténtalo de nuevo.");
+      }
     });
   });
 }
 
 // Initialize everything when DOM is loaded
 document.addEventListener('DOMContentLoaded', async () => {
-  // Create language selector
-  const languageSelector = createLanguageSelector();
-  
-  // Check if there's a saved language preference
-  const savedLanguage = localStorage.getItem('selectedLanguage') || 'es';
-  languageSelector.value = savedLanguage;
-  
-  // Apply the saved language
-  updateLanguage(savedLanguage);
-  
-  // Add language change event listener
-  languageSelector.addEventListener('change', (e) => {
-    updateLanguage(e.target.value);
-  });
-  
-  // Initialize universe filters
-  setupUniverseFilters();
-  
-  // Initial page load - fetch characters
-  currentPage = 1;
-  const characters = await fetchCharacters('', currentPage, 'all');
-  displayCharacters(characters);
-  createPagination();
-  
-  // Add search button event listener
-  const searchButton = document.getElementById('search');
-  if (searchButton) {
-    searchButton.addEventListener('click', async () => {
-      const searchTerm = document.getElementById('buscador').value.trim();
-      currentSearchTerm = searchTerm;
+  try {
+    // Agregar estilos por defecto si no existen
+    addDefaultStyles();
+    
+    // Create language selector
+    const languageSelector = createLanguageSelector();
+    
+    // Check if there's a saved language preference
+    const savedLanguage = localStorage.getItem('selectedLanguage') || 'es';
+    languageSelector.value = savedLanguage;
+    
+    // Apply the saved language
+    updateLanguage(savedLanguage);
+    
+    // Add language change event listener
+    languageSelector.addEventListener('change', (e) => {
+      updateLanguage(e.target.value);
       
-      if (searchTerm !== '') {
-        currentPage = 1; // Reset to first page on new search
-        const characters = await fetchCharacters(searchTerm, currentPage, currentUniverseFilter);
-        displayCharacters(characters);
-        createPagination();
-      } else {
-        displayError('Por favor, ingresa un nombre de personaje.');
-      }
+      // Actualizar textos sin recargar los personajes
+      updatePaginationText();
+      
+      // Actualizar conteo de cómics con el nuevo idioma
+      document.querySelectorAll('[data-comics]').forEach(element => {
+        const count = element.getAttribute('data-comics');
+        if (translations[e.target.value]['character.comicsCount']) {
+          const template = translations[e.target.value]['character.comicsCount'];
+          element.textContent = template.replace('{count}', count);
+        }
+      });
+      
+      // Actualizar etiquetas de universo con el nuevo idioma
+      updateUniverseBadges(e.target.value);
     });
-  }
-  
-  // Allow search with Enter key
-  const searchInput = document.getElementById('buscador');
-  if (searchInput) {
-    searchInput.addEventListener('keypress', async (e) => {
-      if (e.key === 'Enter') {
+    
+    // Initialize universe filters
+    setupUniverseFilters();
+    
+    // Initial page load - fetch characters
+    currentPage = 1;
+    const characters = await fetchCharacters('', currentPage, 'all');
+    displayCharacters(characters);
+    createPagination();
+    
+    // Add search button event listener
+    const searchButton = document.getElementById('search');
+    if (searchButton) {
+      searchButton.addEventListener('click', async () => {
+        const searchInput = document.getElementById('buscador');
+        if (!searchInput) return;
+        
         const searchTerm = searchInput.value.trim();
         currentSearchTerm = searchTerm;
         
         if (searchTerm !== '') {
           currentPage = 1; // Reset to first page on new search
+          
+          // Mostrar indicador de carga preservando el grid
+          const cardContainer = document.getElementById("card-container");
+          if (cardContainer) {
+            const currentStyles = getComputedStyle(cardContainer);
+            cardContainer.innerHTML = '<div class="loading-spinner" style="grid-column: 1 / -1; text-align: center; padding: 20px;">Cargando...</div>';
+            
+            if (currentStyles.display.includes('grid')) {
+              cardContainer.style.display = currentStyles.display;
+              cardContainer.style.gridTemplateColumns = currentStyles.gridTemplateColumns;
+              cardContainer.style.gap = currentStyles.gap;
+            }
+          }
+          
           const characters = await fetchCharacters(searchTerm, currentPage, currentUniverseFilter);
           displayCharacters(characters);
           createPagination();
+          
+          // Asegurar que se aplica el idioma actual
+          updateLanguage(languageSelector.value);
         } else {
-          displayError('Por favor, ingresa un nombre de personaje.');
+          // Mensaje de error en el idioma actual
+          const currentLang = languageSelector.value;
+          const errorMsg = currentLang === 'es' ? 'Por favor, ingresa un nombre de personaje.' :
+                           currentLang === 'en' ? 'Please enter a character name.' :
+                           currentLang === 'fr' ? 'Veuillez saisir un nom de personnage.' :
+                           'Te rog să introduci un nume de personaj.';
+          displayError(errorMsg);
         }
-      }
-    });
+      });
+    }
+    
+    // Allow search with Enter key
+    const searchInput = document.getElementById('buscador');
+    if (searchInput) {
+      searchInput.addEventListener('keypress', async (e) => {
+        if (e.key === 'Enter') {
+          const searchTerm = searchInput.value.trim();
+          currentSearchTerm = searchTerm;
+          
+          if (searchTerm !== '') {
+            currentPage = 1; // Reset to first page on new search
+            
+            // Mostrar indicador de carga preservando el grid
+            const cardContainer = document.getElementById("card-container");
+            if (cardContainer) {
+              const currentStyles = getComputedStyle(cardContainer);
+              cardContainer.innerHTML = '<div class="loading-spinner" style="grid-column: 1 / -1; text-align: center; padding: 20px;">Cargando...</div>';
+              
+              if (currentStyles.display.includes('grid')) {
+                cardContainer.style.display = currentStyles.display;
+                cardContainer.style.gridTemplateColumns = currentStyles.gridTemplateColumns;
+                cardContainer.style.gap = currentStyles.gap;
+              }
+            }
+            
+            const characters = await fetchCharacters(searchTerm, currentPage, currentUniverseFilter);
+            displayCharacters(characters);
+            createPagination();
+            
+            // Asegurar que se aplica el idioma actual
+            updateLanguage(languageSelector.value);
+          } else {
+            // Mensaje de error en el idioma actual
+            const currentLang = languageSelector.value;
+            const errorMsg = currentLang === 'es' ? 'Por favor, ingresa un nombre de personaje.' :
+                             currentLang === 'en' ? 'Please enter a character name.' :
+                             currentLang === 'fr' ? 'Veuillez saisir un nom de personnage.' :
+                             'Te rog să introduci un nume de personaj.';
+            displayError(errorMsg);
+          }
+        }
+      });
+    }
+  } catch (error) {
+    console.error("Error inicializando la aplicación:", error);
+    displayError("Error al inicializar la aplicación. Por favor, recarga la página.");
   }
 });
+
+// Función auxiliar para actualizar las etiquetas de universo con el nuevo idioma
+function updateUniverseBadges(currentLang) {
+  document.querySelectorAll('.universe-badge').forEach(badge => {
+    const text = badge.textContent;
+    
+    if (text.includes('616') || text.includes('Universo') || text.includes('Universe') || text.includes('Univers') || text.includes('Universul')) {
+      badge.textContent = translations[currentLang]['filters.universe616']?.split(' ')[0] || 'Universo 616';
+    } else if (text.includes('Ultimate')) {
+      badge.textContent = translations[currentLang]['filters.ultimate']?.split(' ')[0] || 'Ultimate';
+    } else if (text.includes('Spider') || text.includes('Verse')) {
+      badge.textContent = translations[currentLang]['filters.spider']?.split(' ')[0] || 'Spider-Verse';
+    } else if (text.includes('Noir')) {
+      badge.textContent = translations[currentLang]['filters.noir']?.split(' ')[0] || 'Noir';
+    }
+    // MCU y X-Men se mantienen igual
+  });
+}
+
+// Función para agregar estilos por defecto si no existen
+function addDefaultStyles() {
+  if (!document.querySelector('#marvel-default-styles')) {
+    const styleElement = document.createElement('style');
+    styleElement.id = 'marvel-default-styles';
+    styleElement.textContent = `
+      #card-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 20px;
+        padding: 20px;
+      }
+      
+      .loading-spinner {
+        display: block;
+        text-align: center;
+        padding: 20px;
+        grid-column: 1 / -1;
+      }
+    `;
+    document.head.appendChild(styleElement);
+  }
+}
+
+// Función auxiliar para actualizar el texto de paginación
+function updatePaginationText() {
+  const pageInfo = document.querySelector('.pagination-info');
+  const languageSelector = document.getElementById('language-selector-improved');
+  
+  if (pageInfo && languageSelector && typeof totalCharacters !== 'undefined' && typeof currentPage !== 'undefined' && typeof charactersPerPage !== 'undefined') {
+    const currentLang = languageSelector.value || 'es';
+    const totalPages = Math.ceil(totalCharacters / charactersPerPage) || 1; // Evitar división por cero
+    
+    if (translations[currentLang] && 
+        translations[currentLang]['pagination.page'] && 
+        translations[currentLang]['pagination.of'] && 
+        translations[currentLang]['pagination.characters']) {
+      
+      pageInfo.textContent = `${translations[currentLang]['pagination.page']} ${currentPage} ${translations[currentLang]['pagination.of']} ${totalPages} (${totalCharacters} ${translations[currentLang]['pagination.characters']})`;
+    } else {
+      const paginationTranslations = {
+        'es': `Página ${currentPage} de ${totalPages} (${totalCharacters} personajes)`,
+        'en': `Page ${currentPage} of ${totalPages} (${totalCharacters} characters)`,
+        'fr': `Page ${currentPage} sur ${totalPages} (${totalCharacters} personnages)`,
+        'ro': `Pagina ${currentPage} din ${totalPages} (${totalCharacters} personaje)`
+      };
+      
+      pageInfo.textContent = paginationTranslations[currentLang] || paginationTranslations['es'];
+    }
+  }
+}
