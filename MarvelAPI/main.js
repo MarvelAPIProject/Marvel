@@ -554,6 +554,18 @@ function displayCharacters(characters) {
   }
 
   characters.forEach(character => {
+
+    // --- VERIFICAR IMAGEN ANTES DE MOSTRAR ---
+    const noImageAvailable = 
+      !character.thumbnail || 
+      !character.thumbnail.path || 
+      character.thumbnail.path.includes('image_not_available');
+
+    // Si NO tiene imagen, ignoramos este personaje (no se muestra)
+    if (noImageAvailable) {
+      return; // <- Esto hace que el bucle pase al siguiente personaje
+    }
+
     // Choose the correct way to clone based on whether it's a <template> or a regular element
     let cardClone;
     
@@ -644,9 +656,14 @@ function displayCharacters(characters) {
     universeBadge.textContent = universeText;
     
     cardContainer.appendChild(cardClone);
+
+    // --- RESTO DEL CÓDIGO (solo para personajes CON imagen) ---
+    const characterImg = cardClone.querySelector(".character-image");
+    characterImg.src = `${character.thumbnail.path}.${character.thumbnail.extension}`;
+    // ... (código para nombre, cómics, etc.) ...
+    cardContainer.appendChild(cardClone);
   });
 }
-
 // Create a basic card template if it doesn't exist
 function createCardTemplate() {
   if (document.getElementById('card-template')) {
