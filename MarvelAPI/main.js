@@ -101,212 +101,22 @@ const translations = {
   }
 };
 
-// Function to load CryptoJS library if it's not already available
-function loadCryptoJS() {
-  return new Promise((resolve, reject) => {
-    if (window.CryptoJS) {
-      resolve();
-      return;
-    }
-    
-    const script = document.createElement('script');
-    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js';
-    script.onload = () => resolve();
-    script.onerror = () => reject(new Error('Failed to load CryptoJS'));
-    document.head.appendChild(script);
-  });
-}
-
-// Style for the language selector
-
-
-// Create improved language selector
-function createLanguageSelector() {
-  // Check if we already created the improved selector
-  if (document.getElementById('language-selector-improved')) {
-    return document.getElementById('language-selector-improved');
-  }
-  
-  // Get existing language selector and its parent
-  const existingSelector = document.getElementById('language-selector');
-  let parent;
-  
-  if (!existingSelector) {
-    console.warn('Language selector element not found, creating a new one');
-    const header = document.querySelector('header');
-    
-    // Create a container for the language selector
-    const newContainer = document.createElement('div');
-    newContainer.id = 'language-selector';
-    newContainer.className = 'language-selector-wrapper';
-    
-    if (header) {
-      header.appendChild(newContainer);
-    } else {
-      // If there's no header, add it to the body
-      document.body.insertBefore(newContainer, document.body.firstChild);
-    }
-    
-    parent = newContainer.parentNode;
-  } else {
-    parent = existingSelector.parentNode;
-  }
-  
-  // Create new container
-  const container = document.createElement('div');
-  container.className = 'language-selector-container';
-  
-  // Create label
-  const label = document.createElement('label');
-  label.className = 'language-label';
-  label.setAttribute('for', 'language-selector-improved');
-  label.textContent = translations['es']['idioma']; // Default to Spanish
-  label.setAttribute('data-i18n', 'idioma');
-  
-  // Create new select element
-  const select = document.createElement('select');
-  select.id = 'language-selector-improved';
-  select.className = 'language-selector';
-  
-  // Languages with their display names and flag codes
-  const languages = [
-    { code: 'es', name: 'Español', flag: '🇪🇸' },
-    { code: 'en', name: 'English', flag: '🇬🇧' },
-    { code: 'fr', name: 'Français', flag: '🇫🇷' },
-    { code: 'ro', name: 'Română', flag: '🇷🇴' }
-  ];
-  
-  // Create options
-  languages.forEach(lang => {
-    const option = document.createElement('option');
-    option.value = lang.code;
-    option.textContent = `${lang.flag} ${lang.name}`;
-    
-    // Check local storage for previously selected language
-    const savedLanguage = localStorage.getItem('selectedLanguage');
-    option.selected = lang.code === (savedLanguage || 'es');
-    
-    select.appendChild(option);
-  });
-  
-  // Build the selector
-  container.appendChild(select);
-  
-  // Replace or add the selector
-  if (existingSelector) {
-    parent.replaceChild(container, existingSelector);
-  } else {
-    const selectorWrapper = document.getElementById('language-selector');
-    selectorWrapper.appendChild(container);
-  }
-  
-  return select;
-}
-
-// Function to update text content based on selected language
-function updateLanguage(lang) {
-  if (!translations[lang]) {
-    console.error(`Translation for language "${lang}" not found`);
-    return;
-  }
-  
-  // Save selected language to localStorage for persistence
-  localStorage.setItem('selectedLanguage', lang);
-  
-  // Update all elements with data-i18n attribute
-  document.querySelectorAll('[data-i18n]').forEach(element => {
-    const key = element.getAttribute('data-i18n');
-    if (translations[lang][key]) {
-      // Check if the translation contains HTML
-      if (translations[lang][key].includes('<')) {
-        element.innerHTML = translations[lang][key];
-      } else {
-        element.textContent = translations[lang][key];
-      }
-    }
-  });
-  
-  // Update placeholder attributes
-  document.querySelectorAll('[data-i18n-placeholder]').forEach(element => {
-    const key = element.getAttribute('data-i18n-placeholder');
-    if (translations[lang][key]) {
-      element.placeholder = translations[lang][key];
-    }
-  });
-  
-  // Handle special case for comics count
-  document.querySelectorAll('[data-comics]').forEach(element => {
-    const count = element.getAttribute('data-comics');
-    if (translations[lang]['character.comicsCount']) {
-      const template = translations[lang]['character.comicsCount'];
-      element.textContent = template.replace('{count}', count);
-    }
-  });
-  
-  // Update document title
-  if (translations[lang]['header.title']) {
-    document.title = 'Marvel Universe Explorer'; // Keep the same title across languages
-  }
-  
-  // Update pagination text if it exists
-  updatePaginationText();
-}
-
-// Function to update pagination text based on current language
-function updatePaginationText() {
-  const pageInfo = document.querySelector('.pagination-info');
-  const languageSelector = document.getElementById('language-selector-improved');
-  
-  if (pageInfo && languageSelector && typeof totalCharacters !== 'undefined' && typeof currentPage !== 'undefined' && typeof charactersPerPage !== 'undefined') {
-    const currentLang = languageSelector.value || 'es';
-    const totalPages = Math.ceil(totalCharacters / charactersPerPage) || 1; // Prevent division by zero
-    
-    // Use translations from the global translations object
-    let template = '';
-    
-    if (translations[currentLang] && 
-        translations[currentLang]['pagination.page'] && 
-        translations[currentLang]['pagination.of'] && 
-        translations[currentLang]['pagination.characters']) {
-      
-      template = `${translations[currentLang]['pagination.page']} ${currentPage} ${translations[currentLang]['pagination.of']} ${totalPages} (${totalCharacters} ${translations[currentLang]['pagination.characters']})`;
-    } else {
-      // Fallback translations
-      const paginationTranslations = {
-        'es': `Página ${currentPage} de ${totalPages} (${totalCharacters} personajes)`,
-        'en': `Page ${currentPage} of ${totalPages} (${totalCharacters} characters)`,
-        'fr': `Page ${currentPage} sur ${totalPages} (${totalCharacters} personnages)`,
-        'ro': `Pagina ${currentPage} din ${totalPages} (${totalCharacters} personaje)`
-      };
-      
-      template = paginationTranslations[currentLang] || paginationTranslations['es'];
-    }
-    
-    pageInfo.textContent = template;
-  }
-}
+// Almacena el diseño original de las tarjetas capturado al iniciar
+let originalGridStyle = null;
 
 // Marvel API configuration
 const publicKey = 'dd0b4fdacdd0b53c744fb36389d154db';
 const privateKey = '360fa86fb66f723c45b84fb38e08c7477fbf29f2';
 const baseUrl = 'https://gateway.marvel.com/v1/public';
 
-// Function to generate hash
-async function generateHash(ts) {
-  await loadCryptoJS(); // Ensure CryptoJS is loaded
-  
-  const tsString = ts.toString();
-  return CryptoJS.MD5(tsString + privateKey + publicKey).toString();
-}
-
-// Pagination and filter variables
+// Variables para paginación y filtrado
 let currentPage = 1;
-const charactersPerPage = 12;
+const charactersPerPage = 10;
 let totalCharacters = 0;
 let currentSearchTerm = '';
 let currentUniverseFilter = 'all';
 
-// Marvel universe mapping - this maps filter IDs to actual Marvel universe identifiers
+// Mapeo de universos Marvel
 const universeMapping = {
   'all': null,
   'universe616': '616',
@@ -317,47 +127,499 @@ const universeMapping = {
   'noir': '90214'
 };
 
-// Mock data for when the API call fails or for testing
-const mockCharacters = [
-  {
-    id: 1009610,
-    name: "Spider-Man",
-    description: "Bitten by a radioactive spider, high school student Peter Parker gained the speed, strength and powers of a spider.",
-    thumbnail: {
-      path: "https://i.annihil.us/u/prod/marvel/i/mg/3/50/526548a343e4b",
-      extension: "jpg"
-    },
-    comics: { available: 4747 },
-    universe: "616"
-  },
-  {
-    id: 1009368,
-    name: "Iron Man",
-    description: "Wounded, captured and forced to build a weapon by his enemies, billionaire industrialist Tony Stark instead created an advanced suit of armor to save his life and escape captivity.",
-    thumbnail: {
-      path: "https://i.annihil.us/u/prod/marvel/i/mg/9/c0/527bb7b37ff55",
-      extension: "jpg"
-    },
-    comics: { available: 2610 },
-    universe: "616"
-  },
-  {
-    id: 1009220,
-    name: "Captain America",
-    description: "Vowing to serve his country any way he could, young Steve Rogers took the super soldier serum to become America's one-man army.",
-    thumbnail: {
-      path: "https://i.annihil.us/u/prod/marvel/i/mg/3/50/537ba56d31087",
-      extension: "jpg"
-    },
-    comics: { available: 2305 },
-    universe: "616"
-  }
-];
+// === FUNCIONES DE UTILIDAD ===
 
-// Fetch characters with filters
+// Captura el estilo original del contenedor de tarjetas
+function captureGridStyle() {
+  const container = document.getElementById('card-container');
+  if (!container) return;
+  
+  const computed = getComputedStyle(container);
+  originalGridStyle = {
+    display: computed.display,
+    gridTemplateColumns: computed.gridTemplateColumns,
+    gap: computed.gap,
+    padding: computed.padding,
+    margin: computed.margin,
+    className: container.className
+  };
+  
+  console.log('Estilo original de tarjetas capturado:', originalGridStyle);
+}
+
+// Aplica el estilo original a un contenedor
+function applyOriginalStyle(container) {
+  if (!container || !originalGridStyle) return;
+  
+  container.className = originalGridStyle.className;
+  container.style.display = originalGridStyle.display;
+  container.style.gridTemplateColumns = originalGridStyle.gridTemplateColumns;
+  container.style.gap = originalGridStyle.gap;
+  container.style.padding = originalGridStyle.padding;
+  container.style.margin = originalGridStyle.margin;
+}
+
+// Carga CryptoJS si no está disponible
+function loadCryptoJS() {
+  return new Promise((resolve, reject) => {
+    if (window.CryptoJS) {
+      resolve();
+      return;
+    }
+    
+    const script = document.createElement('script');
+    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js';
+    script.onload = resolve;
+    script.onerror = () => reject(new Error('Failed to load CryptoJS'));
+    document.head.appendChild(script);
+  });
+}
+
+// Genera hash para autenticación de la API
+async function generateHash(ts) {
+  await loadCryptoJS();
+  return CryptoJS.MD5(ts.toString() + privateKey + publicKey).toString();
+}
+
+// Crea un selector de idioma mejorado
+function createLanguageSelector() {
+  if (document.getElementById('language-selector-improved')) {
+    return document.getElementById('language-selector-improved');
+  }
+  
+  const existingSelector = document.getElementById('language-selector');
+  let parent = existingSelector ? existingSelector.parentNode : null;
+  
+  if (!parent) {
+    const header = document.querySelector('header');
+    const newContainer = document.createElement('div');
+    newContainer.id = 'language-selector';
+    newContainer.className = 'language-selector-wrapper';
+    
+    if (header) {
+      header.appendChild(newContainer);
+    } else {
+      document.body.insertBefore(newContainer, document.body.firstChild);
+    }
+    
+    parent = newContainer.parentNode;
+  }
+  
+  const container = document.createElement('div');
+  container.className = 'language-selector-container';
+  
+  const select = document.createElement('select');
+  select.id = 'language-selector-improved';
+  select.className = 'language-selector';
+  
+  const languages = [
+    { code: 'es', name: 'Español', flag: '🇪🇸' },
+    { code: 'en', name: 'English', flag: '🇬🇧' },
+    { code: 'fr', name: 'Français', flag: '🇫🇷' },
+    { code: 'ro', name: 'Română', flag: '🇷🇴' }
+  ];
+  
+  languages.forEach(lang => {
+    const option = document.createElement('option');
+    option.value = lang.code;
+    option.textContent = `${lang.flag} ${lang.name}`;
+    
+    const savedLanguage = localStorage.getItem('selectedLanguage');
+    option.selected = lang.code === (savedLanguage || 'es');
+    
+    select.appendChild(option);
+  });
+  
+  container.appendChild(select);
+  
+  if (existingSelector) {
+    parent.replaceChild(container, existingSelector);
+  } else {
+    const wrapper = document.getElementById('language-selector');
+    if (wrapper) {
+      wrapper.appendChild(container);
+    }
+  }
+  
+  return select;
+}
+
+
+
+// Función para redimensionar automáticamente elementos según el tamaño de ventana
+function setupResponsiveBehavior() {
+  // Ajustar layout según el ancho de la ventana
+  function adjustLayout() {
+    const width = window.innerWidth;
+    const cardContainer = document.getElementById('card-container');
+    
+    if (!cardContainer) return;
+    
+    // Adaptar las columnas del grid según el ancho de pantalla
+    if (width < 576) {
+      cardContainer.style.gridTemplateColumns = 'repeat(auto-fill, minmax(140px, 1fr))';
+      cardContainer.style.gap = '12px';
+    } else if (width < 768) {
+      cardContainer.style.gridTemplateColumns = 'repeat(auto-fill, minmax(180px, 1fr))';
+      cardContainer.style.gap = '15px';
+    } else {
+      cardContainer.style.gridTemplateColumns = 'repeat(auto-fill, minmax(250px, 1fr))';
+      cardContainer.style.gap = '20px';
+    }
+    
+    // Ajustar número de botones de paginación visible según ancho
+    const paginationButtons = document.querySelectorAll('.pagination-button:not(.prev-button):not(.next-button)');
+    const maxVisibleButtons = width < 576 ? 3 : (width < 768 ? 5 : 7);
+    
+    if (paginationButtons.length > maxVisibleButtons) {
+      // Lógica para mostrar solo botones importantes (primera, última, actual y cercanos)
+      // Esta función se llamará cada vez que se actualice la paginación
+    }
+  }
+  
+  // Escuchar cambios de tamaño de la ventana
+  window.addEventListener('resize', adjustLayout);
+  
+  // Aplicar ajustes iniciales
+  adjustLayout();
+}
+
+// Crea template de tarjeta si no existe
+function createCardTemplate() {
+  if (document.getElementById('card-template')) return;
+  
+  const template = document.createElement('template');
+  template.id = 'card-template';
+  
+  template.innerHTML = `
+    <div class="character-card">
+      <span class="universe-badge"></span>
+      <img class="character-image" src="" alt="Marvel Character">
+      <div class="character-info">
+        <h3 class="character-name"></h3>
+      </div>
+    </div>
+  `;
+  
+  document.body.appendChild(template);
+  
+  // Crear contenedor si no existe
+  if (!document.getElementById('card-container')) {
+    const main = document.querySelector('main') || document.body.appendChild(document.createElement('main'));
+    
+    const container = document.createElement('div');
+    container.id = 'card-container';
+    container.className = 'cards-grid';
+    
+    // No aplicamos estilos directamente ya que lo haremos con CSS
+    main.appendChild(container);
+  }
+}
+
+// Actualiza texto de paginación según el idioma actual
+function updatePaginationText() {
+  const pageInfo = document.querySelector('.pagination-info');
+  const langSelector = document.getElementById('language-selector-improved');
+  
+  if (!pageInfo || !langSelector) return;
+  
+  const currentLang = langSelector.value || 'es';
+  const totalPages = Math.ceil(totalCharacters / charactersPerPage) || 1;
+  
+  if (translations[currentLang] && 
+      translations[currentLang]['pagination.page'] && 
+      translations[currentLang]['pagination.of'] && 
+      translations[currentLang]['pagination.characters']) {
+    
+    pageInfo.textContent = `${translations[currentLang]['pagination.page']} ${currentPage} ${translations[currentLang]['pagination.of']} ${totalPages} (${totalCharacters} ${translations[currentLang]['pagination.characters']})`;
+  } else {
+    const fallbackTexts = {
+      'es': `Página ${currentPage} de ${totalPages} (${totalCharacters} personajes)`,
+      'en': `Page ${currentPage} of ${totalPages} (${totalCharacters} characters)`,
+      'fr': `Page ${currentPage} sur ${totalPages} (${totalCharacters} personnages)`,
+      'ro': `Pagina ${currentPage} din ${totalPages} (${totalCharacters} personaje)`
+    };
+    
+    pageInfo.textContent = fallbackTexts[currentLang] || fallbackTexts['es'];
+  }
+  
+  // Ajustamos el tamaño de fuente si hay mucho texto y la pantalla es pequeña
+  if (window.innerWidth < 768 && pageInfo.textContent.length > 40) {
+    pageInfo.style.fontSize = '0.8rem';
+  } else {
+    pageInfo.style.fontSize = '0.9rem';
+  }
+}
+
+// Actualizar función de inicialización
+function initApp() {
+  // Agregar funcionalidad responsive
+  setupResponsiveBehavior();
+  
+  // Resto de la inicialización original
+  try {
+    // Inicializar selector de idioma
+    const langSelector = createLanguageSelector();
+    const savedLanguage = localStorage.getItem('selectedLanguage') || 'es';
+    langSelector.value = savedLanguage;
+    updateLanguage(savedLanguage);
+    
+    // Configurar cambio de idioma
+    langSelector.addEventListener('change', (e) => {
+      updateLanguage(e.target.value);
+      updatePaginationText();
+      updateUniverseBadges(e.target.value);
+      
+      // Actualizar conteo de cómics
+      document.querySelectorAll('[data-comics]').forEach(element => {
+        const count = element.getAttribute('data-comics');
+        if (translations[e.target.value]['character.comicsCount']) {
+          element.textContent = translations[e.target.value]['character.comicsCount']
+            .replace('{count}', count);
+        }
+      });
+    });
+    
+    // Configurar filtros y búsqueda
+    setupUniverseFilters();
+    setupSearch();
+    
+    // Cargar personajes iniciales
+    currentPage = 1;
+    fetchCharacters('', currentPage, 'all')
+      .then(characters => {
+        displayCharacters(characters);
+        createPagination();
+        
+        // Capturar estilo original después de cargar
+        setTimeout(captureGridStyle, 500);
+      })
+      .catch(error => {
+        console.error("Error fetching characters:", error);
+        displayError("Error al cargar personajes. Por favor, recarga la página.");
+      });
+    
+  } catch (error) {
+    console.error("Error inicializando la aplicación:", error);
+    displayError("Error al inicializar la aplicación. Por favor, recarga la página.");
+  }
+}
+
+// Reemplazar el event listener original con el nuevo
+document.addEventListener('DOMContentLoaded', initApp);
+
+// Actualiza textos basados en el idioma seleccionado
+function updateLanguage(lang) {
+  if (!translations[lang]) {
+    console.error(`Translation not found for: ${lang}`);
+    return;
+  }
+  
+  localStorage.setItem('selectedLanguage', lang);
+  
+  // Actualiza elementos con data-i18n
+  document.querySelectorAll('[data-i18n]').forEach(element => {
+    const key = element.getAttribute('data-i18n');
+    if (translations[lang][key]) {
+      if (translations[lang][key].includes('<')) {
+        element.innerHTML = translations[lang][key];
+      } else {
+        element.textContent = translations[lang][key];
+      }
+    }
+  });
+  
+  // Actualiza placeholders
+  document.querySelectorAll('[data-i18n-placeholder]').forEach(element => {
+    const key = element.getAttribute('data-i18n-placeholder');
+    if (translations[lang][key]) {
+      element.placeholder = translations[lang][key];
+    }
+  });
+  
+  // Actualiza contador de cómics
+  document.querySelectorAll('[data-comics]').forEach(element => {
+    const count = element.getAttribute('data-comics');
+    if (translations[lang]['character.comicsCount']) {
+      element.textContent = translations[lang]['character.comicsCount'].replace('{count}', count);
+    }
+  });
+  
+  // Actualiza título del documento
+  document.title = 'Marvel Universe Explorer';
+  
+  // Actualiza información de paginación
+  updatePaginationText();
+}
+
+// Actualiza texto de paginación según el idioma actual
+// Actualiza texto de paginación según el idioma actual
+function updatePaginationText() {
+  const pageInfo = document.querySelector('.pagination-info');
+  const langSelector = document.getElementById('language-selector-improved');
+  
+  if (!pageInfo || !langSelector) return;
+  
+  const currentLang = langSelector.value || 'es';
+  const totalPages = Math.ceil(totalCharacters / charactersPerPage) || 1;
+  
+  if (translations[currentLang] && 
+      translations[currentLang]['pagination.page'] && 
+      translations[currentLang]['pagination.of'] && 
+      translations[currentLang]['pagination.characters']) {
+    
+    pageInfo.textContent = `${translations[currentLang]['pagination.page']} ${currentPage} ${translations[currentLang]['pagination.of']} ${totalPages} (${totalCharacters} ${translations[currentLang]['pagination.characters']})`;
+  } else {
+    const fallbackTexts = {
+      'es': `Página ${currentPage} de ${totalPages} (${totalCharacters} personajes)`,
+      'en': `Page ${currentPage} of ${totalPages} (${totalCharacters} characters)`,
+      'fr': `Page ${currentPage} sur ${totalPages} (${totalCharacters} personnages)`,
+      'ro': `Pagina ${currentPage} din ${totalPages} (${totalCharacters} personaje)`
+    };
+    
+    pageInfo.textContent = fallbackTexts[currentLang] || fallbackTexts['es'];
+  }
+}
+
+// Crea controles de paginación
+function createPagination() {
+  const totalPages = Math.ceil(totalCharacters / charactersPerPage) || 1;
+  
+  let paginationContainer = document.getElementById('pagination-container');
+  if (!paginationContainer) {
+    paginationContainer = document.createElement('div');
+    paginationContainer.id = 'pagination-container';
+    paginationContainer.className = 'pagination';
+    paginationContainer.style.display = 'flex';
+    paginationContainer.style.justifyContent = 'center';
+    paginationContainer.style.alignItems = 'center';
+    paginationContainer.style.gap = '10px';
+    paginationContainer.style.margin = '20px 0';
+    
+    const cardsGrid = document.getElementById('card-container');
+    if (cardsGrid && cardsGrid.parentNode) {
+      cardsGrid.parentNode.insertBefore(paginationContainer, cardsGrid.nextSibling);
+    } else {
+      document.body.appendChild(paginationContainer);
+    }
+  } else {
+    paginationContainer.innerHTML = '';
+  }
+  
+  // Ocultar paginación si solo hay una página
+  if (totalPages <= 1) {
+    paginationContainer.style.display = 'none';
+    return;
+  } else {
+    paginationContainer.style.display = 'flex';
+  }
+  
+  // Botón "Anterior"
+  const prevButton = document.createElement('button');
+  prevButton.className = 'pagination-button prev-button';
+  prevButton.textContent = '❮';
+  prevButton.disabled = currentPage === 1;
+  prevButton.addEventListener('click', () => {
+    if (currentPage > 1) goToPage(currentPage - 1);
+  });
+  paginationContainer.appendChild(prevButton);
+  
+  // Botones de página
+  const maxButtons = 5;
+  let startPage = Math.max(1, currentPage - Math.floor(maxButtons / 2));
+  let endPage = Math.min(totalPages, startPage + maxButtons - 1);
+  
+  if (endPage - startPage + 1 < maxButtons) {
+    startPage = Math.max(1, endPage - maxButtons + 1);
+  }
+  
+  // Primera página y elipsis
+  if (startPage > 1) {
+    const firstPageButton = document.createElement('button');
+    firstPageButton.className = 'pagination-button';
+    firstPageButton.textContent = '1';
+    firstPageButton.addEventListener('click', () => goToPage(1));
+    paginationContainer.appendChild(firstPageButton);
+    
+    if (startPage > 2) {
+      const ellipsis = document.createElement('span');
+      ellipsis.className = 'pagination-ellipsis';
+      ellipsis.textContent = '...';
+      paginationContainer.appendChild(ellipsis);
+    }
+  }
+  
+  // Páginas intermedias
+  for (let i = startPage; i <= endPage; i++) {
+    const pageButton = document.createElement('button');
+    pageButton.className = 'pagination-button';
+    if (i === currentPage) pageButton.classList.add('active');
+    pageButton.textContent = i.toString();
+    pageButton.addEventListener('click', () => goToPage(i));
+    paginationContainer.appendChild(pageButton);
+  }
+  
+  // Última página y elipsis
+  if (endPage < totalPages) {
+    if (endPage < totalPages - 1) {
+      const ellipsis = document.createElement('span');
+      ellipsis.className = 'pagination-ellipsis';
+      ellipsis.textContent = '...';
+      paginationContainer.appendChild(ellipsis);
+    }
+    
+    const lastPageButton = document.createElement('button');
+    lastPageButton.className = 'pagination-button';
+    lastPageButton.textContent = totalPages.toString();
+    lastPageButton.addEventListener('click', () => goToPage(totalPages));
+    paginationContainer.appendChild(lastPageButton);
+  }
+  
+  // Botón "Siguiente"
+  const nextButton = document.createElement('button');
+  nextButton.className = 'pagination-button next-button';
+  nextButton.textContent = '❯';
+  nextButton.disabled = currentPage === totalPages;
+  nextButton.addEventListener('click', () => {
+    if (currentPage < totalPages) goToPage(currentPage + 1);
+  });
+  paginationContainer.appendChild(nextButton);
+  
+  // Información de página - asegura que esté antes de llamar a updatePaginationText
+  const pageInfo = document.createElement('div');
+  pageInfo.className = 'pagination-info';
+  paginationContainer.appendChild(pageInfo);
+  
+  // Llama a updatePaginationText después de que pageInfo esté en el DOM
+  setTimeout(() => updatePaginationText(), 0);
+}
+
+// Actualiza etiquetas de universo con traducción
+function updateUniverseBadges(currentLang) {
+  document.querySelectorAll('.universe-badge').forEach(badge => {
+    const text = badge.textContent;
+    
+    if (text.includes('616') || text.includes('Universo') || text.includes('Universe') || text.includes('Univers') || text.includes('Universul')) {
+      badge.textContent = translations[currentLang]['filters.universe616']?.split(' ')[0] || 'Universo 616';
+    } else if (text.includes('Ultimate')) {
+      badge.textContent = translations[currentLang]['filters.ultimate']?.split(' ')[0] || 'Ultimate';
+    } else if (text.includes('Spider') || text.includes('Verse')) {
+      badge.textContent = translations[currentLang]['filters.spider']?.split(' ')[0] || 'Spider-Verse';
+    } else if (text.includes('Noir')) {
+      badge.textContent = translations[currentLang]['filters.noir']?.split(' ')[0] || 'Noir';
+    }
+  });
+}
+
+// === FUNCIONES PRINCIPALES DE LA API ===
+
+// Obtiene personajes con filtros
 async function fetchCharacters(searchTerm = '', page = 1, universeFilter = 'all') {
   try {
-    await loadCryptoJS(); // Ensure CryptoJS is loaded
+    await loadCryptoJS();
+    
+    // Pedir más personajes para compensar los que no tienen imagen
+    const fetchLimit = charactersPerPage * 3;
     
     const ts = Math.floor(Date.now() / 1000);
     const hash = await generateHash(ts);
@@ -366,30 +628,15 @@ async function fetchCharacters(searchTerm = '', page = 1, universeFilter = 'all'
       ts: ts.toString(),
       apikey: publicKey,
       hash: hash,
-      limit: charactersPerPage.toString(),
+      limit: fetchLimit.toString(),
       offset: ((page - 1) * charactersPerPage).toString()
     });
 
     if (searchTerm) {
       params.append('nameStartsWith', searchTerm);
     }
-    
-    // Add additional parameters for universe filter if not "all"
-    if (universeFilter !== 'all' && universeMapping[universeFilter]) {
-      // Note: Marvel API doesn't directly support filtering by universe in their REST API
-      // In a real implementation, you might need to fetch all and filter client-side,
-      // or use a custom API endpoint that supports this filtering
-      // For now, we'll add a theoretical parameter
-      params.append('universe', universeMapping[universeFilter]);
-    }
 
     const url = `${baseUrl}/characters?${params.toString()}`;
-    
-    console.group('🕵️ Marvel API Debug');
-    console.log("🟢 URL de la petición:", url);
-    console.log("Timestamp:", ts);
-    console.log("Hash generado:", hash);
-    console.log("Filtro de universo:", universeFilter);
     
     try {
       const response = await fetch(url, {
@@ -400,95 +647,67 @@ async function fetchCharacters(searchTerm = '', page = 1, universeFilter = 'all'
         }
       });
 
-      console.log("Estado de la respuesta:", response.status);
-
       if (!response.ok) {
-        const errorText = await response.text();
-        console.error('Detalles del error:', {
-          status: response.status,
-          statusText: response.statusText,
-          errorBody: errorText
-        });
-        
-        throw new Error(`Error HTTP: ${response.status} - ${errorText}`);
+        throw new Error(`HTTP Error: ${response.status}`);
       }
       
       const data = await response.json();
-      console.log("✅ Datos recibidos:", data);
-      console.groupEnd();
-
-      // Update total characters count for pagination
       totalCharacters = data.data.total;
       
-      let characters = data.data.results;
+      // Añadir información de universo a los personajes
+      let characters = data.data.results.map(character => {
+        const universeId = character.id % 6;
+        let universe;
+        
+        switch(universeId) {
+          case 0: universe = '616'; break;
+          case 1: universe = '1610'; break;
+          case 2: universe = '199999'; break;
+          case 3: universe = '10005'; break;
+          case 4: universe = '1048'; break;
+          case 5: universe = '90214'; break;
+          default: universe = '616';
+        }
+        
+        return {...character, universe};
+      });
       
-      // Apply universe filter client-side if the API doesn't support it
-      // This is a workaround since Marvel API doesn't support universe filtering directly
+      // Filtrar por universo si es necesario
       if (universeFilter !== 'all' && universeMapping[universeFilter]) {
-        // In a real implementation, you'd map characters to their universes based on your data
-        // For now, we'll simulate this by assigning a universe to each character
-        characters = characters.map(character => {
-          // Simulate universe assignment based on character ID
-          const universeId = character.id % 6;
-          let universe;
-          
-          switch(universeId) {
-            case 0: universe = '616'; break;
-            case 1: universe = '1610'; break;
-            case 2: universe = '199999'; break;
-            case 3: universe = '10005'; break;
-            case 4: universe = '1048'; break;
-            case 5: universe = '90214'; break;
-            default: universe = '616';
-          }
-          
-          return {...character, universe};
-        });
-        
-        // Filter characters by selected universe
-        characters = characters.filter(character => character.universe === universeMapping[universeFilter]);
-        
-        // Update total for client-side filtering
-        totalCharacters = characters.length;
-      } else {
-        // Add universe info to all characters
-        characters = characters.map(character => {
-          // Simulate universe assignment based on character ID
-          const universeId = character.id % 6;
-          let universe;
-          
-          switch(universeId) {
-            case 0: universe = '616'; break;
-            case 1: universe = '1610'; break;
-            case 2: universe = '199999'; break;
-            case 3: universe = '10005'; break;
-            case 4: universe = '1048'; break;
-            case 5: universe = '90214'; break;
-            default: universe = '616';
-          }
-          
-          return {...character, universe};
-        });
+        characters = characters.filter(character => 
+          character.universe === universeMapping[universeFilter]
+        );
       }
       
-      return characters;
-    } catch (error) {
-      console.error("❌ Error completo:", error);
-      console.groupEnd();
+      // Filtrar personajes sin imagen
+      const validCharacters = characters.filter(character => 
+        character.thumbnail && 
+        character.thumbnail.path && 
+        !character.thumbnail.path.includes('image_not_available')
+      );
       
-      displayError('Error al cargar los personajes. Usando datos de muestra.');
-      // Return mock data for testing or when API call fails
+      // Ajustar el total si hay un filtro aplicado
+      if (universeFilter !== 'all' || validCharacters.length < characters.length) {
+        const ratio = characters.length > 0 ? validCharacters.length / characters.length : 0;
+        totalCharacters = Math.max(Math.ceil(totalCharacters * ratio), validCharacters.length);
+      }
+      
+      // Asegurar que devolvemos el número correcto de personajes por página
+      return validCharacters.slice(0, charactersPerPage);
+      
+    } catch (error) {
+      console.error("Error fetching characters:", error);
       totalCharacters = mockCharacters.length;
       return mockCharacters;
     }
   } catch (error) {
-    console.error("Error loading CryptoJS or generating hash:", error);
-    displayError('Error en la configuración. Usando datos de muestra.');
-    // Return mock data as fallback
+    console.error("CryptoJS error:", error);
     totalCharacters = mockCharacters.length;
     return mockCharacters;
   }
 }
+
+// Muestra personajes en la interfaz
 
 function displayCharacters(characters) {
   const cardContainer = document.getElementById("card-container");
@@ -618,20 +837,36 @@ function displayCharacters(characters) {
     // Configure name
     name.textContent = character.name || "Nombre desconocido";
 
-    // Configure comics count
-    const comicsAvailable = character.comics?.available || 0;
-    comicsCount.setAttribute('data-comics', comicsAvailable);
-    
     // Get the current language and apply the correct text format
     const languageSelector = document.getElementById('language-selector-improved');
     const currentLang = languageSelector ? languageSelector.value : 'es';
     
-    if (translations[currentLang]['character.comicsCount']) {
-      const template = translations[currentLang]['character.comicsCount'];
-      comicsCount.textContent = template.replace('{count}', comicsAvailable);
-    } else {
-      comicsCount.textContent = `${comicsAvailable} ${comicsAvailable === 1 ? 'cómic' : 'cómics'}`;
-    }
+    // Store comics count as data attribute
+    const comicsAvailable = character.comics?.available || 0;
+    comicsCount.setAttribute('data-comics', comicsAvailable);
+    
+    // CAMBIO AQUÍ: Reemplazar el contador de cómics con un botón "Ver más"
+    comicsCount.innerHTML = '';  // Limpiar el contenido actual
+    
+    // Crear botón "Ver más" y agregar clase para estilos
+    comicsCount.classList.add('view-more-btn');
+    
+    // Establecer el texto del botón según el idioma
+    const viewMoreText = {
+      'es': 'Ver más',
+      'en': 'View more',
+      'fr': 'Voir plus',
+      'ro': 'Vezi mai mult'
+    };
+    
+    comicsCount.textContent = viewMoreText[currentLang] || viewMoreText['es'];
+    
+    // Agregar evento de clic para mostrar detalles del personaje
+    comicsCount.addEventListener('click', function(e) {
+      e.stopPropagation();
+      // Almacenar datos del personaje para usar en el modal
+      openCharacterModal(character, currentLang);
+    });
 
     // Configure universe
     let universeText;
@@ -656,81 +891,381 @@ function displayCharacters(characters) {
     universeBadge.textContent = universeText;
     
     cardContainer.appendChild(cardClone);
-
-    // --- RESTO DEL CÓDIGO (solo para personajes CON imagen) ---
-    const characterImg = cardClone.querySelector(".character-image");
-    characterImg.src = `${character.thumbnail.path}.${character.thumbnail.extension}`;
-    // ... (código para nombre, cómics, etc.) ...
-    cardContainer.appendChild(cardClone);
   });
 }
-// Create a basic card template if it doesn't exist
-function createCardTemplate() {
-  if (document.getElementById('card-template')) {
-    return; // Template already exists
-  }
+
+// Función para abrir el modal con los detalles del personaje
+function openCharacterModal(character, currentLang) {
+  // Verificar si ya existe el modal, si no, crearlo
+  let modal = document.getElementById('character-modal');
   
-  const template = document.createElement('template');
-  template.id = 'card-template';
-  
-  template.innerHTML = `
-    <div class="character-card">
-      <img class="character-image" src="" alt="Marvel Character">
-      <div class="character-info">
-        <h3 class="character-name"></h3>
-        <p class="character-comics" data-comics="0"></p>
-        <span class="universe-badge"></span>
+  if (!modal) {
+    // Crear el modal
+    modal = document.createElement('div');
+    modal.id = 'character-modal';
+    modal.className = 'modal';
+    
+    modal.innerHTML = `
+      <div class="modal-content">
+        <span class="close-modal">&times;</span>
+        <div class="modal-body">
+          <div class="modal-left">
+            <img id="modal-image" src="" alt="Character Image">
+            <h2 id="modal-name"></h2>
+          </div>
+          <div class="modal-right">
+            <div class="modal-info-section">
+              <h3 id="modal-universe-title">Universe</h3>
+              <p id="modal-universe"></p>
+            </div>
+            <div class="modal-info-section">
+              <h3 id="modal-comics-title">Comics</h3>
+              <p id="modal-comics"></p>
+            </div>
+            <div class="modal-info-section">
+              <h3 id="modal-description-title">Description</h3>
+              <p id="modal-description"></p>
+            </div>
+          </div>
+        </div>
       </div>
-    </div>
-  `;
-  
-  document.body.appendChild(template);
-  
-  // Also check for card container and create it if missing
-  if (!document.getElementById('card-container')) {
-    const main = document.querySelector('main');
-    if (main) {
-      const container = document.createElement('div');
-      container.id = 'card-container';
-      container.className = 'character-grid';
-      container.style.display = 'grid';
-      container.style.gridTemplateColumns = 'repeat(auto-fill, minmax(250px, 1fr))';
-      container.style.gap = '20px';
-      main.appendChild(container);
-    } else {
-      // Create main if it doesn't exist
-      const main = document.createElement('main');
-      document.body.appendChild(main);
-      
-      const container = document.createElement('div');
-      container.id = 'card-container';
-      container.className = 'character-grid';
-      container.style.display = 'grid';
-      container.style.gridTemplateColumns = 'repeat(auto-fill, minmax(250px, 1fr))';
-      container.style.gap = '20px';
-      main.appendChild(container);
+    `;
+    
+    document.body.appendChild(modal);
+    
+    // Agregar estilos si no existen
+    if (!document.getElementById('marvel-modal-styles')) {
+      const styleElement = document.createElement('style');
+      styleElement.id = 'marvel-modal-styles';
+      styleElement.textContent = `
+        /* Modal Styles */
+        .modal {
+          display: none;
+          position: fixed;
+          z-index: 1000;
+          left: 0;
+          top: 0;
+          width: 100%;
+          height: 100%;
+          overflow: auto;
+          background-color: rgba(0, 0, 0, 0.85);
+          backdrop-filter: blur(5px);
+          opacity: 0;
+          transition: opacity 0.3s ease;
+        }
+
+        .modal.show {
+          display: block;
+          opacity: 1;
+        }
+
+        .modal-content {
+          background: linear-gradient(145deg, #2a2a2a, #1e1e1e);
+          margin: 5% auto;
+          width: 80%;
+          max-width: 900px;
+          border-radius: 16px;
+          box-shadow: 0 15px 50px rgba(230, 36, 41, 0.4), 
+                      0 5px 20px rgba(0, 0, 0, 0.7);
+          border: 2px solid var(--rojito);
+          overflow: hidden;
+          position: relative;
+          transform: translateY(-30px);
+          opacity: 0;
+          transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .modal.show .modal-content {
+          transform: translateY(0);
+          opacity: 1;
+        }
+
+        .close-modal {
+          position: absolute;
+          top: 15px;
+          right: 20px;
+          color: var(--blanquito);
+          font-size: 28px;
+          font-weight: bold;
+          cursor: pointer;
+          z-index: 10;
+          transition: all 0.2s ease;
+        }
+
+        .close-modal:hover {
+          color: var(--rojito);
+          transform: scale(1.2);
+        }
+
+        .modal-body {
+          display: flex;
+          flex-direction: row;
+          padding: 0;
+        }
+
+        .modal-left {
+          flex: 0 0 40%;
+          position: relative;
+          display: flex;
+          flex-direction: column;
+        }
+
+        .modal-left img {
+          width: 100%;
+          height: 400px;
+          object-fit: cover;
+          object-position: top center;
+        }
+
+        .modal-left h2 {
+          background-color: rgba(0, 0, 0, 0.7);
+          color: var(--blanquito);
+          padding: 15px;
+          margin: 0;
+          font-size: 1.8rem;
+          position: absolute;
+          bottom: 0;
+          width: 100%;
+          text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+          border-left: 4px solid var(--rojito);
+        }
+
+        .modal-right {
+          flex: 0 0 60%;
+          padding: 25px;
+          color: var(--blanquito);
+          max-height: 500px;
+          overflow-y: auto;
+        }
+
+        .modal-info-section {
+          margin-bottom: 20px;
+        }
+
+        .modal-info-section h3 {
+          color: var(--rojito);
+          font-size: 1.3rem;
+          margin-bottom: 5px;
+          position: relative;
+          display: inline-block;
+        }
+
+        .modal-info-section h3::after {
+          content: '';
+          position: absolute;
+          bottom: -3px;
+          left: 0;
+          width: 100%;
+          height: 2px;
+          background-color: var(--rojito);
+        }
+
+        .modal-info-section p {
+          line-height: 1.6;
+          margin: 8px 0;
+        }
+
+        /* Style for "View More" button replacing comics count */
+        .view-more-btn {
+          background-color: var(--rojito);
+          color: var(--blanquito);
+          padding: 8px 15px;
+          border: none;
+          border-radius: 20px;
+          font-weight: bold;
+          cursor: pointer;
+          transition: all 0.3s ease;
+          text-transform: uppercase;
+          font-size: 0.8rem;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+        }
+
+        .view-more-btn:hover {
+          background-color: #c41f24;
+          transform: translateY(-2px);
+          box-shadow: 0 5px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .view-more-btn::after {
+          content: '→';
+          margin-left: 5px;
+          font-size: 1rem;
+          transition: transform 0.2s ease;
+        }
+
+        .view-more-btn:hover::after {
+          transform: translateX(3px);
+        }
+
+        /* Responsive design for modal */
+        @media (max-width: 768px) {
+          .modal-content {
+            width: 95%;
+            margin: 10% auto;
+          }
+          
+          .modal-body {
+            flex-direction: column;
+          }
+          
+          .modal-left, .modal-right {
+            flex: 0 0 100%;
+          }
+          
+          .modal-left img {
+            height: 300px;
+          }
+        }
+      `;
+      document.head.appendChild(styleElement);
     }
   }
+  
+  // Obtener elementos del modal
+  const modalImage = document.getElementById('modal-image');
+  const modalName = document.getElementById('modal-name');
+  const modalUniverse = document.getElementById('modal-universe');
+  const modalComics = document.getElementById('modal-comics');
+  const modalDescription = document.getElementById('modal-description');
+  
+  // Configurar el contenido del modal
+  if (character.thumbnail) {
+    modalImage.src = `${character.thumbnail.path}.${character.thumbnail.extension}`;
+    modalImage.alt = character.name;
+  }
+  
+  modalName.textContent = character.name;
+  
+  // Configurar el universo
+  let universeText;
+  if (character.universe === '616') {
+    universeText = translations[currentLang]['filters.universe616'] || 'Universe 616 (Main)';
+  } else if (character.universe === '1610') {
+    universeText = translations[currentLang]['filters.ultimate'] || 'Ultimate (1610)';
+  } else if (character.universe === '199999') {
+    universeText = translations[currentLang]['filters.mcu'] || 'MCU (199999)';
+  } else if (character.universe === '10005') {
+    universeText = translations[currentLang]['filters.xmen'] || 'X-Men (10005)';
+  } else if (character.universe === '1048') {
+    universeText = translations[currentLang]['filters.spider'] || 'Spider-Verse (1048)';
+  } else if (character.universe === '90214') {
+    universeText = translations[currentLang]['filters.noir'] || 'Marvel Noir (90214)';
+  } else {
+    universeText = translations[currentLang]['character.universe616'] || 'Universe 616';
+  }
+  
+  modalUniverse.textContent = universeText;
+  
+  // Configurar el contador de cómics con la traducción adecuada
+  const comicsAvailable = character.comics?.available || 0;
+  if (translations[currentLang]['character.comicsCount']) {
+    const template = translations[currentLang]['character.comicsCount'];
+    modalComics.textContent = template.replace('{count}', comicsAvailable);
+  } else {
+    modalComics.textContent = `${comicsAvailable} ${comicsAvailable === 1 ? 'cómic' : 'cómics'}`;
+  }
+  
+  // Configurar la descripción
+  if (character.description && character.description.trim() !== '') {
+    modalDescription.textContent = character.description;
+  } else {
+    // Mensaje de "sin descripción" según el idioma
+    const noDescriptionText = {
+      'es': 'No hay descripción disponible para este personaje.',
+      'en': 'No description available for this character.',
+      'fr': 'Aucune description disponible pour ce personnage.',
+      'ro': 'Nu există descriere disponibilă pentru acest personaj.'
+    };
+    modalDescription.textContent = noDescriptionText[currentLang] || noDescriptionText['es'];
+  }
+  
+  // Traducir etiquetas del modal según el idioma
+  document.getElementById('modal-universe-title').textContent = {
+    'es': 'Universo',
+    'en': 'Universe',
+    'fr': 'Univers',
+    'ro': 'Univers'
+  }[currentLang] || 'Universe';
+  
+  document.getElementById('modal-comics-title').textContent = {
+    'es': 'Cómics',
+    'en': 'Comics',
+    'fr': 'Bandes Dessinées',
+    'ro': 'Benzi Desenate'
+  }[currentLang] || 'Comics';
+  
+  document.getElementById('modal-description-title').textContent = {
+    'es': 'Descripción',
+    'en': 'Description',
+    'fr': 'Description',
+    'ro': 'Descriere'
+  }[currentLang] || 'Description';
+  
+  // Mostrar el modal con animación
+  modal.classList.add('show');
+  setTimeout(() => {
+    modal.querySelector('.modal-content').style.opacity = '1';
+    modal.querySelector('.modal-content').style.transform = 'translateY(0)';
+  }, 10);
+  
+  document.body.style.overflow = 'hidden'; // Evitar scroll detrás del modal
+  
+  // Configurar eventos para cerrar el modal
+  setupModalEventListeners();
 }
 
-// Function to display errors
+// Configurar los event listeners para el modal
+function setupModalEventListeners() {
+  const modal = document.getElementById('character-modal');
+  const closeBtn = modal.querySelector('.close-modal');
+  
+  // Eliminar listeners existentes para evitar duplicados
+  const newCloseBtn = closeBtn.cloneNode(true);
+  closeBtn.parentNode.replaceChild(newCloseBtn, closeBtn);
+  
+  // Cerrar modal al hacer clic en el botón X
+  newCloseBtn.addEventListener('click', closeModal);
+  
+  // Cerrar modal al hacer clic fuera del contenido
+  modal.addEventListener('click', function(e) {
+    if (e.target === modal) {
+      closeModal();
+    }
+  });
+  
+  // Cerrar modal con la tecla Escape
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && modal.classList.contains('show')) {
+      closeModal();
+    }
+  });
+}
+
+// Función para cerrar el modal
+function closeModal() {
+  const modal = document.getElementById('character-modal');
+  if (!modal) return;
+  
+  modal.classList.remove('show');
+  document.body.style.overflow = ''; // Restaurar scroll
+}
+
+// Muestra mensaje de error
 function displayError(message) {
-  // Try to find error container
   let errorContainer = document.getElementById('error-container');
   let errorMessage = document.getElementById('error-message');
   
-  // Create error elements if they don't exist
   if (!errorContainer) {
     errorContainer = document.createElement('div');
     errorContainer.id = 'error-container';
     errorContainer.className = 'error-container';
     
-    // Find a good place to insert it
     const cardContainer = document.getElementById('card-container');
-    if (cardContainer) {
+    if (cardContainer && cardContainer.parentNode) {
       cardContainer.parentNode.insertBefore(errorContainer, cardContainer);
     } else {
-      // Find main or create it
       let main = document.querySelector('main');
       if (!main) {
         main = document.createElement('main');
@@ -747,10 +1282,9 @@ function displayError(message) {
     errorContainer.appendChild(errorMessage);
   }
   
-  // Translate common error messages
-  const languageSelector = document.getElementById('language-selector-improved');
-  if (languageSelector && message === 'No se encontraron personajes.') {
-    const currentLang = languageSelector.value;
+  // Traducir error común
+  if (message === 'No se encontraron personajes.') {
+    const currentLang = document.getElementById('language-selector-improved')?.value;
     if (currentLang === 'en') message = 'No characters found.';
     else if (currentLang === 'fr') message = 'Aucun personnage trouvé.';
     else if (currentLang === 'ro') message = 'Nu s-au găsit personaje.';
@@ -760,16 +1294,16 @@ function displayError(message) {
   errorContainer.style.display = "block";
 }
 
-// Create pagination controls
+// === FUNCIONES DE NAVEGACIÓN Y PAGINACIÓN ===
+
+// Crea controles de paginación
 function createPagination() {
-  if (typeof totalCharacters === 'undefined' || typeof charactersPerPage === 'undefined' || typeof currentPage === 'undefined') {
-    console.error("Pagination variables not defined");
-    return;
-  }
+
+  
+  if (typeof totalCharacters === 'undefined') return;
   
   const totalPages = Math.ceil(totalCharacters / charactersPerPage);
   
-  // Create pagination container if it doesn't exist
   let paginationContainer = document.getElementById('pagination-container');
   if (!paginationContainer) {
     paginationContainer = document.createElement('div');
@@ -781,19 +1315,17 @@ function createPagination() {
     paginationContainer.style.gap = '10px';
     paginationContainer.style.margin = '20px 0';
     
-    // Add pagination container after the cards grid
     const cardsGrid = document.getElementById('card-container');
-    if (cardsGrid) {
+    if (cardsGrid && cardsGrid.parentNode) {
       cardsGrid.parentNode.insertBefore(paginationContainer, cardsGrid.nextSibling);
     } else {
-      // Fallback to body
       document.body.appendChild(paginationContainer);
     }
   } else {
     paginationContainer.innerHTML = '';
   }
   
-  // Don't show pagination if there's only one page or no results
+  // Ocultar paginación si solo hay una página
   if (totalPages <= 1) {
     paginationContainer.style.display = 'none';
     return;
@@ -801,29 +1333,26 @@ function createPagination() {
     paginationContainer.style.display = 'flex';
   }
   
-  // Create "Previous" button
+  // Botón "Anterior"
   const prevButton = document.createElement('button');
   prevButton.className = 'pagination-button prev-button';
   prevButton.textContent = '❮';
   prevButton.disabled = currentPage === 1;
   prevButton.addEventListener('click', () => {
-    if (currentPage > 1) {
-      goToPage(currentPage - 1);
-    }
+    if (currentPage > 1) goToPage(currentPage - 1);
   });
   paginationContainer.appendChild(prevButton);
   
-  // Create page number buttons
-  const maxButtons = 5; // Maximum number of page buttons to show
+  // Botones de página
+  const maxButtons = 5;
   let startPage = Math.max(1, currentPage - Math.floor(maxButtons / 2));
   let endPage = Math.min(totalPages, startPage + maxButtons - 1);
   
-  // Adjust start page if we're near the end
   if (endPage - startPage + 1 < maxButtons) {
     startPage = Math.max(1, endPage - maxButtons + 1);
   }
   
-  // Show first page and ellipsis if needed
+  // Primera página y elipsis
   if (startPage > 1) {
     const firstPageButton = document.createElement('button');
     firstPageButton.className = 'pagination-button';
@@ -839,19 +1368,17 @@ function createPagination() {
     }
   }
   
-  // Create page number buttons
+  // Páginas intermedias
   for (let i = startPage; i <= endPage; i++) {
     const pageButton = document.createElement('button');
     pageButton.className = 'pagination-button';
-    if (i === currentPage) {
-      pageButton.classList.add('active');
-    }
+    if (i === currentPage) pageButton.classList.add('active');
     pageButton.textContent = i.toString();
     pageButton.addEventListener('click', () => goToPage(i));
     paginationContainer.appendChild(pageButton);
   }
   
-  // Show last page and ellipsis if needed
+  // Última página y elipsis
   if (endPage < totalPages) {
     if (endPage < totalPages - 1) {
       const ellipsis = document.createElement('span');
@@ -867,402 +1394,299 @@ function createPagination() {
     paginationContainer.appendChild(lastPageButton);
   }
   
-  // Create "Next" button
+  // Botón "Siguiente"
   const nextButton = document.createElement('button');
   nextButton.className = 'pagination-button next-button';
   nextButton.textContent = '❯';
   nextButton.disabled = currentPage === totalPages;
   nextButton.addEventListener('click', () => {
-    if (currentPage < totalPages) {
-      goToPage(currentPage + 1);
-    }
+    if (currentPage < totalPages) goToPage(currentPage + 1);
   });
   paginationContainer.appendChild(nextButton);
   
-  // Add page info text
-  // Usar las traducciones del objeto global si están disponibles
+  // Información de página
   const pageInfo = document.createElement('div');
   pageInfo.className = 'pagination-info';
-  
-  // Obtener el idioma actual
-  const currentLang = document.getElementById('language-selector-improved')?.value || 'es';
-  
-  // Usar traducciones basadas en las claves de i18n
-  if (translations[currentLang] && 
-      translations[currentLang]['pagination.page'] && 
-      translations[currentLang]['pagination.of'] && 
-      translations[currentLang]['pagination.characters']) {
-    
-    pageInfo.textContent = `${translations[currentLang]['pagination.page']} ${currentPage} ${translations[currentLang]['pagination.of']} ${totalPages} (${totalCharacters} ${translations[currentLang]['pagination.characters']})`;
-  } else {
-    // Usar traducciones alternativas como respaldo
-    const paginationTranslations = {
-      'es': `Página ${currentPage} de ${totalPages} (${totalCharacters} personajes)`,
-      'en': `Page ${currentPage} of ${totalPages} (${totalCharacters} characters)`,
-      'fr': `Page ${currentPage} sur ${totalPages} (${totalCharacters} personnages)`,
-      'ro': `Pagina ${currentPage} din ${totalPages} (${totalCharacters} personaje)`
-    };
-    
-    pageInfo.textContent = paginationTranslations[currentLang] || paginationTranslations['es'];
-  }
-  
+  updatePaginationText();
   paginationContainer.appendChild(pageInfo);
 }
 
-// Function to handle page navigation
+  // Navega a una página específica
 async function goToPage(page) {
   currentPage = page;
   
-  // Show loading indicator (manteniendo el layout grid)
   const cardContainer = document.getElementById("card-container");
   if (!cardContainer) return;
   
-  // Guardar estilos actuales antes de limpiar
-  const currentStyles = getComputedStyle(cardContainer);
-  const gridStyle = {
-    display: currentStyles.display,
-    gridTemplateColumns: currentStyles.gridTemplateColumns,
-    gap: currentStyles.gap
-  };
+  // Clonar contenedor para preservar estilo
+  const newContainer = cardContainer.cloneNode(false);
+  const parent = cardContainer.parentNode;
   
-  // Mostrar indicador de carga
-  const loadingText = document.getElementById('language-selector-improved')?.value === 'en' ? 'Loading...' :
-                      document.getElementById('language-selector-improved')?.value === 'fr' ? 'Chargement...' :
-                      document.getElementById('language-selector-improved')?.value === 'ro' ? 'Se încarcă...' :
-                      'Cargando...';
-                      
-  cardContainer.innerHTML = `<div class="loading-spinner" style="grid-column: 1 / -1; text-align: center; padding: 20px;">${loadingText}</div>`;
-  
-  // Reaplicar estilos de grid
-  if (gridStyle.display.includes('grid')) {
-    cardContainer.style.display = gridStyle.display;
-    cardContainer.style.gridTemplateColumns = gridStyle.gridTemplateColumns;
-    cardContainer.style.gap = gridStyle.gap;
-  } else {
-    // Aplicar estilos por defecto si no existe grid
-    cardContainer.style.display = 'grid';
-    cardContainer.style.gridTemplateColumns = 'repeat(auto-fill, minmax(250px, 1fr))';
-    cardContainer.style.gap = '20px';
-  }
-  
-  try {
-    // Fetch characters for the selected page with current filters
-    const characters = await fetchCharacters(currentSearchTerm, page, currentUniverseFilter);
+  if (parent) {
+    parent.replaceChild(newContainer, cardContainer);
+    applyOriginalStyle(newContainer);
     
-    // Display characters and update pagination
-    displayCharacters(characters);
-    createPagination();
+    // Mostrar indicador de carga
+    const langSelector = document.getElementById('language-selector-improved');
+    const currentLang = langSelector?.value || 'es';
     
-    // Aplicar el idioma actual a los nuevos elementos
-    const languageSelector = document.getElementById('language-selector-improved');
-    if (languageSelector) {
-      updateLanguage(languageSelector.value);
+    const loadingEl = document.createElement('div');
+    loadingEl.className = 'loading-spinner';
+    loadingEl.style.gridColumn = '1 / -1';
+    loadingEl.style.textAlign = 'center';
+    loadingEl.style.padding = '20px';
+    newContainer.appendChild(loadingEl);
+    
+    try {
+      // Cargar personajes para la página seleccionada
+      const characters = await fetchCharacters(currentSearchTerm, page, currentUniverseFilter);
+      displayCharacters(characters);
+      createPagination();
+      
+      // Aplicar idioma
+      const langSelector = document.getElementById('language-selector-improved');
+      if (langSelector) updateLanguage(langSelector.value);
+      
+      // Scroll suave al inicio de resultados
+      const mainElement = document.querySelector('main');
+      if (mainElement) mainElement.scrollIntoView({ behavior: 'smooth' });
+    } catch (error) {
+      console.error("Error navegando a la página:", error);
+      
+      // Mensaje de error traducido
+      const langSelector = document.getElementById('language-selector-improved');
+      const currentLang = langSelector?.value || 'es';
+      
+      const errorMessages = {
+        'es': 'Error al cargar la página. Inténtalo de nuevo.',
+        'en': 'Error loading page. Please try again.',
+        'fr': 'Erreur lors du chargement de la page. Veuillez réessayer.',
+        'ro': 'Eroare la încărcarea paginii. Încercați din nou.'
+      };
+      
+      displayError(errorMessages[currentLang] || errorMessages['es']);
     }
-    
-    // Scroll to top of results
-    const mainElement = document.querySelector('main');
-    if (mainElement) {
-      mainElement.scrollIntoView({ behavior: 'smooth' });
-    }
-  } catch (error) {
-    console.error("Error navegando a la página:", error);
-    
-    // Mostrar mensaje de error en el idioma actual
-    const languageSelector = document.getElementById('language-selector-improved');
-    const currentLang = languageSelector?.value || 'es';
-    
-    const errorMessages = {
-      'es': 'Error al cargar la página. Inténtalo de nuevo.',
-      'en': 'Error loading page. Please try again.',
-      'fr': 'Erreur lors du chargement de la page. Veuillez réessayer.',
-      'ro': 'Eroare la încărcarea paginii. Încercați din nou.'
-    };
-    
-    displayError(errorMessages[currentLang] || errorMessages['es']);
   }
 }
 
-// Function to set up universe filters
+// Configura filtros de universo
 function setupUniverseFilters() {
-  const filterButtons = document.querySelectorAll('.universe-filter');
-  
-  if (filterButtons.length === 0) {
-    console.warn('No universe filter buttons found');
-    return;
-  }
+  const filterButtons = document.querySelectorAll('.filter-button');
+  if (filterButtons.length === 0) return;
   
   filterButtons.forEach(button => {
     // Reemplazar el botón para eliminar listeners antiguos
-    const oldButton = button.cloneNode(true);
-    button.parentNode.replaceChild(oldButton, button);
+    const newButton = button.cloneNode(true);
+    button.parentNode.replaceChild(newButton, button);
     
-    oldButton.addEventListener('click', async function() {
-      // Remove active class from all buttons
-      document.querySelectorAll('.universe-filter').forEach(btn => btn.classList.remove('active'));
-      
-      // Add active class to clicked button
+    newButton.addEventListener('click', async function() {
+      // Actualizar clases activas
+      document.querySelectorAll('.filter-button').forEach(btn => 
+        btn.classList.remove('active')
+      );
       this.classList.add('active');
       
-      // Get filter value from data attribute
-      const filterValue = this.getAttribute('data-filter') || 'all';
+      // Obtener valor del filtro y aplicarlo
+      const filterValue = this.getAttribute('data-universe') || 'all';
       currentUniverseFilter = filterValue;
-      
-      // Reset to first page with new filter
       currentPage = 1;
       
-      // Show loading indicator manteniendo los estilos de grid
-      const cardContainer = document.getElementById("card-container");
-      if (!cardContainer) return;
-      
-      // Guardar estilos actuales
-      const currentStyles = getComputedStyle(cardContainer);
-      const gridStyle = {
-        display: currentStyles.display,
-        gridTemplateColumns: currentStyles.gridTemplateColumns,
-        gap: currentStyles.gap
-      };
-      
-      // Texto de carga en el idioma actual
-      const languageSelector = document.getElementById('language-selector-improved');
-      const currentLang = languageSelector?.value || 'es';
-      const loadingText = translations[currentLang]?.['pagination.loading'] || 'Cargando...';
-      
-      cardContainer.innerHTML = `<div class="loading-spinner" style="grid-column: 1 / -1; text-align: center; padding: 20px;">${loadingText}</div>`;
-      
-      // Reaplicar estilos de grid
-      if (gridStyle.display.includes('grid')) {
-        cardContainer.style.display = gridStyle.display;
-        cardContainer.style.gridTemplateColumns = gridStyle.gridTemplateColumns;
-        cardContainer.style.gap = gridStyle.gap;
-      } else {
-        cardContainer.style.display = 'grid';
-        cardContainer.style.gridTemplateColumns = 'repeat(auto-fill, minmax(250px, 1fr))';
-        cardContainer.style.gap = '20px';
-      }
-      
-      try {
-        // Fetch characters with current search term and new filter
-        const characters = await fetchCharacters(currentSearchTerm, currentPage, filterValue);
-        
-        // Display characters and update pagination
-        displayCharacters(characters);
-        createPagination();
-        
-        // Asegurar que el idioma se aplica correctamente
-        if (languageSelector) {
-          updateLanguage(languageSelector.value);
-        }
-      } catch (error) {
-        console.error("Error al aplicar filtro:", error);
-        displayError("Error al aplicar el filtro. Inténtalo de nuevo.");
-      }
+      // Aplicar filtro y actualizar vista
+      await applyFilter();
     });
   });
 }
 
-// Initialize everything when DOM is loaded
+// Aplica filtros actuales y actualiza la interfaz
+async function applyFilter() {
+  const cardContainer = document.getElementById("card-container");
+  if (!cardContainer) return;
+  
+  // Clonar para preservar estilo
+  const newContainer = cardContainer.cloneNode(false);
+  const parent = cardContainer.parentNode;
+  
+  if (parent) {
+    parent.replaceChild(newContainer, cardContainer);
+    applyOriginalStyle(newContainer);
+    
+    // Mostrar indicador de carga
+    const langSelector = document.getElementById('language-selector-improved');
+    const currentLang = langSelector?.value || 'es';
+    
+    const loadingEl = document.createElement('div');
+    loadingEl.className = 'loading-spinner';
+    loadingEl.style.gridColumn = '1 / -1';
+    loadingEl.style.textAlign = 'center';
+    loadingEl.style.padding = '20px';
+    newContainer.appendChild(loadingEl);
+    
+    try {
+      // Cargar personajes con filtros actuales
+      const characters = await fetchCharacters(currentSearchTerm, currentPage, currentUniverseFilter);
+      displayCharacters(characters);
+      createPagination();
+      
+      // Aplicar idioma
+      if (langSelector) updateLanguage(langSelector.value);
+    } catch (error) {
+      console.error("Error al aplicar filtro:", error);
+      displayError("Error al aplicar el filtro. Inténtalo de nuevo.");
+    }
+  }
+}
+
+// Configura funcionalidad de búsqueda
+function setupSearch() {
+  // Configurar botón de búsqueda
+  const searchButton = document.getElementById('search');
+  if (searchButton) searchButton.addEventListener('click', performSearch);
+  
+  // Configurar búsqueda con tecla Enter
+  const searchInput = document.getElementById('buscador');
+  if (searchInput) {
+    searchInput.addEventListener('keypress', e => {
+      if (e.key === 'Enter') performSearch();
+    });
+  }
+}
+
+// Ejecuta búsqueda
+async function performSearch() {
+  const searchInput = document.getElementById('buscador');
+  if (!searchInput) return;
+  
+  const searchTerm = searchInput.value.trim();
+  
+  // Validar término de búsqueda
+  if (searchTerm === '') {
+    const langSelector = document.getElementById('language-selector-improved');
+    const currentLang = langSelector?.value || 'es';
+    
+    const errorMsg = {
+      'es': 'Por favor, ingresa un nombre de personaje.',
+      'en': 'Please enter a character name.',
+      'fr': 'Veuillez saisir un nom de personnage.',
+      'ro': 'Te rog să introduci un nume de personaj.'
+    }[currentLang] || 'Por favor, ingresa un nombre de personaje.';
+    
+    displayError(errorMsg);
+    return;
+  }
+  
+  // Actualizar término de búsqueda y resetear página
+  currentSearchTerm = searchTerm;
+  currentPage = 1;
+  
+  // Aplicar búsqueda
+  await applyFilter();
+}
+
+// Crea template de tarjeta si no existe
+function createCardTemplate() {
+  if (document.getElementById('card-template')) return;
+  
+  const template = document.createElement('template');
+  template.id = 'card-template';
+  
+  template.innerHTML = `
+    <div class="character-card">
+      <span class="universe-badge"></span>
+      <img class="character-image" src="" alt="Marvel Character">
+      <div class="character-info">
+        <h3 class="character-name"></h3>
+        <p class="character-comics" data-comics="0"></p>
+      </div>
+    </div>
+  `;
+  
+  document.body.appendChild(template);
+  
+  // Crear contenedor si no existe
+  if (!document.getElementById('card-container')) {
+    const main = document.querySelector('main') || document.body.appendChild(document.createElement('main'));
+    
+    const container = document.createElement('div');
+    container.id = 'card-container';
+    container.className = 'cards-grid';
+    container.style.display = 'grid';
+    container.style.gridTemplateColumns = 'repeat(auto-fill, minmax(250px, 1fr))';
+    container.style.gap = '20px';
+    
+    main.appendChild(container);
+  }
+}
+
+// Agrega estilos por defecto
+function addDefaultStyles() {
+  if (document.querySelector('#marvel-default-styles')) return;
+  
+  const styleElement = document.createElement('style');
+  styleElement.id = 'marvel-default-styles';
+  styleElement.textContent = `
+    #card-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 20px;
+      padding: 20px;
+    }
+    
+    .loading-spinner {
+      display: block;
+      text-align: center;
+      padding: 20px;
+      grid-column: 1 / -1;
+    }
+  `;
+  
+  document.head.appendChild(styleElement);
+}
+
+// === INICIALIZACIÓN Y EVENTOS ===
+
+// Inicializar aplicación cuando el DOM esté cargado
 document.addEventListener('DOMContentLoaded', async () => {
   try {
-    // Agregar estilos por defecto si no existen
+    // Agregar estilos por defecto
     addDefaultStyles();
     
-    // Create language selector
-    const languageSelector = createLanguageSelector();
-    
-    // Check if there's a saved language preference
+    // Inicializar selector de idioma
+    const langSelector = createLanguageSelector();
     const savedLanguage = localStorage.getItem('selectedLanguage') || 'es';
-    languageSelector.value = savedLanguage;
-    
-    // Apply the saved language
+    langSelector.value = savedLanguage;
     updateLanguage(savedLanguage);
     
-    // Add language change event listener
-    languageSelector.addEventListener('change', (e) => {
+    // Configurar cambio de idioma
+    langSelector.addEventListener('change', (e) => {
       updateLanguage(e.target.value);
-      
-      // Actualizar textos sin recargar los personajes
       updatePaginationText();
+      updateUniverseBadges(e.target.value);
       
-      // Actualizar conteo de cómics con el nuevo idioma
+      // Actualizar conteo de cómics
       document.querySelectorAll('[data-comics]').forEach(element => {
         const count = element.getAttribute('data-comics');
         if (translations[e.target.value]['character.comicsCount']) {
-          const template = translations[e.target.value]['character.comicsCount'];
-          element.textContent = template.replace('{count}', count);
+          element.textContent = translations[e.target.value]['character.comicsCount']
+            .replace('{count}', count);
         }
       });
-      
-      // Actualizar etiquetas de universo con el nuevo idioma
-      updateUniverseBadges(e.target.value);
     });
     
-    // Initialize universe filters
+    // Configurar filtros y búsqueda
     setupUniverseFilters();
+    setupSearch();
     
-    // Initial page load - fetch characters
+    // Cargar personajes iniciales
     currentPage = 1;
     const characters = await fetchCharacters('', currentPage, 'all');
     displayCharacters(characters);
     createPagination();
     
-    // Add search button event listener
-    const searchButton = document.getElementById('search');
-    if (searchButton) {
-      searchButton.addEventListener('click', async () => {
-        const searchInput = document.getElementById('buscador');
-        if (!searchInput) return;
-        
-        const searchTerm = searchInput.value.trim();
-        currentSearchTerm = searchTerm;
-        
-        if (searchTerm !== '') {
-          currentPage = 1; // Reset to first page on new search
-          
-          // Mostrar indicador de carga preservando el grid
-          const cardContainer = document.getElementById("card-container");
-          if (cardContainer) {
-            const currentStyles = getComputedStyle(cardContainer);
-            cardContainer.innerHTML = '<div class="loading-spinner" style="grid-column: 1 / -1; text-align: center; padding: 20px;">Cargando...</div>';
-            
-            if (currentStyles.display.includes('grid')) {
-              cardContainer.style.display = currentStyles.display;
-              cardContainer.style.gridTemplateColumns = currentStyles.gridTemplateColumns;
-              cardContainer.style.gap = currentStyles.gap;
-            }
-          }
-          
-          const characters = await fetchCharacters(searchTerm, currentPage, currentUniverseFilter);
-          displayCharacters(characters);
-          createPagination();
-          
-          // Asegurar que se aplica el idioma actual
-          updateLanguage(languageSelector.value);
-        } else {
-          // Mensaje de error en el idioma actual
-          const currentLang = languageSelector.value;
-          const errorMsg = currentLang === 'es' ? 'Por favor, ingresa un nombre de personaje.' :
-                           currentLang === 'en' ? 'Please enter a character name.' :
-                           currentLang === 'fr' ? 'Veuillez saisir un nom de personnage.' :
-                           'Te rog să introduci un nume de personaj.';
-          displayError(errorMsg);
-        }
-      });
-    }
+    // Capturar estilo original después de cargar
+    setTimeout(captureGridStyle, 500);
     
-    // Allow search with Enter key
-    const searchInput = document.getElementById('buscador');
-    if (searchInput) {
-      searchInput.addEventListener('keypress', async (e) => {
-        if (e.key === 'Enter') {
-          const searchTerm = searchInput.value.trim();
-          currentSearchTerm = searchTerm;
-          
-          if (searchTerm !== '') {
-            currentPage = 1; // Reset to first page on new search
-            
-            // Mostrar indicador de carga preservando el grid
-            const cardContainer = document.getElementById("card-container");
-            if (cardContainer) {
-              const currentStyles = getComputedStyle(cardContainer);
-              cardContainer.innerHTML = '<div class="loading-spinner" style="grid-column: 1 / -1; text-align: center; padding: 20px;">Cargando...</div>';
-              
-              if (currentStyles.display.includes('grid')) {
-                cardContainer.style.display = currentStyles.display;
-                cardContainer.style.gridTemplateColumns = currentStyles.gridTemplateColumns;
-                cardContainer.style.gap = currentStyles.gap;
-              }
-            }
-            
-            const characters = await fetchCharacters(searchTerm, currentPage, currentUniverseFilter);
-            displayCharacters(characters);
-            createPagination();
-            
-            // Asegurar que se aplica el idioma actual
-            updateLanguage(languageSelector.value);
-          } else {
-            // Mensaje de error en el idioma actual
-            const currentLang = languageSelector.value;
-            const errorMsg = currentLang === 'es' ? 'Por favor, ingresa un nombre de personaje.' :
-                             currentLang === 'en' ? 'Please enter a character name.' :
-                             currentLang === 'fr' ? 'Veuillez saisir un nom de personnage.' :
-                             'Te rog să introduci un nume de personaj.';
-            displayError(errorMsg);
-          }
-        }
-      });
-    }
   } catch (error) {
     console.error("Error inicializando la aplicación:", error);
     displayError("Error al inicializar la aplicación. Por favor, recarga la página.");
   }
 });
-
-// Función auxiliar para actualizar las etiquetas de universo con el nuevo idioma
-function updateUniverseBadges(currentLang) {
-  document.querySelectorAll('.universe-badge').forEach(badge => {
-    const text = badge.textContent;
-    
-    if (text.includes('616') || text.includes('Universo') || text.includes('Universe') || text.includes('Univers') || text.includes('Universul')) {
-      badge.textContent = translations[currentLang]['filters.universe616']?.split(' ')[0] || 'Universo 616';
-    } else if (text.includes('Ultimate')) {
-      badge.textContent = translations[currentLang]['filters.ultimate']?.split(' ')[0] || 'Ultimate';
-    } else if (text.includes('Spider') || text.includes('Verse')) {
-      badge.textContent = translations[currentLang]['filters.spider']?.split(' ')[0] || 'Spider-Verse';
-    } else if (text.includes('Noir')) {
-      badge.textContent = translations[currentLang]['filters.noir']?.split(' ')[0] || 'Noir';
-    }
-    // MCU y X-Men se mantienen igual
-  });
-}
-
-// Función para agregar estilos por defecto si no existen
-function addDefaultStyles() {
-  if (!document.querySelector('#marvel-default-styles')) {
-    const styleElement = document.createElement('style');
-    styleElement.id = 'marvel-default-styles';
-    styleElement.textContent = `
-      #card-container {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-        gap: 20px;
-        padding: 20px;
-      }
-      
-      .loading-spinner {
-        display: block;
-        text-align: center;
-        padding: 20px;
-        grid-column: 1 / -1;
-      }
-    `;
-    document.head.appendChild(styleElement);
-  }
-}
-
-// Función auxiliar para actualizar el texto de paginación
-function updatePaginationText() {
-  const pageInfo = document.querySelector('.pagination-info');
-  const languageSelector = document.getElementById('language-selector-improved');
-  
-  if (pageInfo && languageSelector && typeof totalCharacters !== 'undefined' && typeof currentPage !== 'undefined' && typeof charactersPerPage !== 'undefined') {
-    const currentLang = languageSelector.value || 'es';
-    const totalPages = Math.ceil(totalCharacters / charactersPerPage) || 1; // Evitar división por cero
-    
-    if (translations[currentLang] && 
-        translations[currentLang]['pagination.page'] && 
-        translations[currentLang]['pagination.of'] && 
-        translations[currentLang]['pagination.characters']) {
-      
-      pageInfo.textContent = `${translations[currentLang]['pagination.page']} ${currentPage} ${translations[currentLang]['pagination.of']} ${totalPages} (${totalCharacters} ${translations[currentLang]['pagination.characters']})`;
-    } else {
-      const paginationTranslations = {
-        'es': `Página ${currentPage} de ${totalPages} (${totalCharacters} personajes)`,
-        'en': `Page ${currentPage} of ${totalPages} (${totalCharacters} characters)`,
-        'fr': `Page ${currentPage} sur ${totalPages} (${totalCharacters} personnages)`,
-        'ro': `Pagina ${currentPage} din ${totalPages} (${totalCharacters} personaje)`
-      };
-      
-      pageInfo.textContent = paginationTranslations[currentLang] || paginationTranslations['es'];
-    }
-  }
-}
