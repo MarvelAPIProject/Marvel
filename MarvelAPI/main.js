@@ -111,7 +111,7 @@ const baseUrl = 'https://gateway.marvel.com/v1/public';
 
 // Variables para paginación y filtrado
 let currentPage = 1;
-const charactersPerPage = 10;
+const charactersPerPage = 12;
 let totalCharacters = 0;
 let currentSearchTerm = '';
 let currentUniverseFilter = 'all';
