@@ -346,6 +346,10 @@ footer {
     display: flex;
     flex-direction: column;
     gap: 0.3rem;
+/* Responsive design for modal */
+    position: relative;
+    z-index: 2;
+    text-align: center;
 }
 
 .copyright a {
@@ -889,7 +893,7 @@ footer {
     margin: 20px 0;
     float: left;
     left: 25px;
-    position: relative;
+    position: absolute;
 }
 
 .contact-section .instagram-link {
@@ -1062,4 +1066,10 @@ footer {
 
 .favorite-toast.show {
     transform: translateX(-50%) translateY(0);
+}
+
+#datos{
+    text-align: center;
+    position: relative;
+    width: auto;
 }
