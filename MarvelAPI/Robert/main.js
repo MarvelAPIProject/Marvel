@@ -456,14 +456,7 @@ function initApp() {
       updatePaginationText();
       updateUniverseBadges(e.target.value);
       
-      // Actualizar conteo de cómics
-      document.querySelectorAll('[data-comics]').forEach(element => {
-        const count = element.getAttribute('data-comics');
-        if (translations[e.target.value]['character.comicsCount']) {
-          element.textContent = translations[e.target.value]['character.comicsCount']
-            .replace('{count}', count);
-        }
-      });
+      
     });
     
     // Configurar filtros de universo
@@ -528,13 +521,7 @@ function updateLanguage(lang) {
     }
   });
   
-  // Actualiza contador de cómics
-  document.querySelectorAll('[data-comics]').forEach(element => {
-    const count = element.getAttribute('data-comics');
-    if (translations[lang]['character.comicsCount']) {
-      element.textContent = translations[lang]['character.comicsCount'].replace('{count}', count);
-    }
-  });
+  
   
   // Actualiza título del documento
   document.title = 'Marvel Universe Explorer';
