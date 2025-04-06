@@ -69,19 +69,19 @@ async function marvelDataToXML() {
     
     // Obtener personajes (limit=100 para obtener más resultados)
     console.log('Obteniendo personajes...');
-    marvelData.characters = await fetchMarvelData('characters', { limit: 100 });
+    marvelData.characters = await fetchMarvelData('characters');
     
     // Obtener cómics
     console.log('Obteniendo cómics...');
-    marvelData.comics = await fetchMarvelData('comics', { limit: 100 });
+    marvelData.comics = await fetchMarvelData('comics');
     
     // Obtener series
     console.log('Obteniendo series...');
-    marvelData.series = await fetchMarvelData('series', { limit: 100 });
+    marvelData.series = await fetchMarvelData('series');
     
     // Obtener eventos
     console.log('Obteniendo eventos...');
-    marvelData.events = await fetchMarvelData('events', { limit: 100 });
+    marvelData.events = await fetchMarvelData('events');
     
     // Nota: Para películas tendrías que usar otra fuente ya que la API de Marvel
     // no tiene un endpoint específico para películas del MCU
