@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Marvel Universe Explorer</title>
+    <link rel="icon" type="image/x-icon" href="marvelfav.png">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.9-1/crypto-js.js"></script>
+    <link rel="stylesheet" href="style.css">
+    
+</head>
+<body>
+    <!-- La sección `<header>` está creando el encabezado de una página web para la aplicación Marvel Universe Explorer. -->
+    <header>
+        <div class="idioma">
+            <label for="language-selector" data-i18n="idioma"></label>
+            <select id="language-selector">
+                <option value="es">Español</option>
+                <option value="en">English</option>
+                <option value="fr">Français</option>
+                <option value="ro">Română</option>
+            </select>
+        </div><br><br>
+        <div class="header-content container">
+            
+            <h1 class="marvel-logo" data-i18n="header.title"></h1>
+            <p class="subtitle" data-i18n="header.subtitle"></p>
+            
+        </div>
+        <div class="barrabuscador">
+            <input type="text" id="buscador" data-i18n-placeholder="search.placeholder" />
+            <button type="button" id="search" data-i18n="search.button"></button>
+        </div>
+    </header>
+    
+    <!-- El código a continuación está creando una sección dentro del contenido principal de la página web 
+    para filtrar personajes en la aplicación Marvel Universe Explorer. -->
+    <main class="container">
+        <!-- Filtros de contenido (nuevo) -->
+        <div class="content-filters">
+            <h2 class="filters-title" data-i18n="contentFilters.title">Filtrar por Tipo</h2>
+            <div class="filter-buttons">
+                <button class="content-filter-button active" data-content="characters" data-i18n="contentFilters.characters">Personajes</button>
+                <button class="content-filter-button" data-content="comics" data-i18n="contentFilters.comics">Comics</button>
+                <button class="content-filter-button" data-content="series" data-i18n="contentFilters.series">Series</button>
+                <button class="content-filter-button" data-content="events" data-i18n="contentFilters.events">Eventos</button>
+                <button class="content-filter-button" data-content="movies" data-i18n="contentFilters.movies">Películas</button>
+                <button class="content-filter-button" data-content="favorites" data-i18n="contentFilters.favorites">Favoritos</button>
+            </div>
+        </div>
+        
+        <!-- Filtros de universo (ahora después de filtros de contenido) -->
+        <div class="universe-filters">
+            <h2 class="filters-title" data-i18n="filters.title"></h2>
+            <div class="filter-buttons">
+                <button class="filter-button active" data-universe="all" data-i18n="filters.all"></button>
+                <button class="filter-button" data-universe="616" data-i18n="filters.universe616"></button>
+                <button class="filter-button" data-universe="ultimate" data-i18n="filters.ultimate"></button>
+                <button class="filter-button" data-universe="mcu" data-i18n="filters.mcu"></button>
+                <button class="filter-button" data-universe="xmen" data-i18n="filters.xmen"></button>
+                <button class="filter-button" data-universe="spider" data-i18n="filters.spider"></button>
+                <button class="filter-button" data-universe="noir" data-i18n="filters.noir"></button>
+            </div>
+        </div>
+        
+        <!-- Contenedor para mostrar errores -->
+        <div id="error-container">
+            <p id="error-message"></p>
+        </div>
+            
+        <!-- El código a continuación está creando un contenedor para las tarjetas de personajes 
+        en la aplicación web Marvel Universe Explorer. -->
+        <!-- El contenedor sirve como base para la información obtenida de la API -->
+        <!-- Contenedor para las tarjetas de personajes -->
+        <div class="cards-grid" id="card-container">
+                <!-- Plantilla de tarjeta (oculta) -->
+        <div class="character-card" id="card-template" style="display: none;">
+            <div class="favorite-icon"><i class="far fa-star"></i></div>
+            <div class="character-image-container">
+                <img src="" alt="" class="character-image">
+            </div>
+            <div class="character-info">
+                <h3 class="character-name"></h3>
+                <div class="character-meta">
+                    <span class="character-comics"></span>
+                    <span class="character-universe"></span>
+                </div>
+            </div>
+            <div class="universe-badge"></div>
+        </div>
+            </div>
+
+            <div id="pagination-container" class="pagination">
+                <!-- Pagination controls will be inserted here by JavaScript -->
+            </div>
+    </main>
+    
+    <script src="marvel-modal.js"></script>
+            <!-- Add modal container -->
+            <div id="character-modal" class="modal">
+                <div class="modal-content">
+                  <span class="close-modal">&times;</span>
+                  <div class="modal-body">
+                    <div class="modal-left">
+                      <img id="modal-image" src="" alt="Character Image">
+                      <h2 id="modal-name"></h2>
+                      <div id="modal-favorite-btn" class="modal-favorite-btn">
+                        <i class="far fa-star"></i> <span data-i18n="modal.addToFavorites">Añadir a favoritos</span>
+                      </div>
+                    </div>
+                    <div class="modal-right">
+                      <div class="modal-info-section">
+                        <h3 id="modal-universe-title">Universe</h3>
+                        <p id="modal-universe"></p>
+                      </div>
+                      <div class="modal-info-section">
+                        <h3 id="modal-comics-title">Comics</h3>
+                        <p id="modal-comics"></p>
+                      </div>
+                      <div class="modal-info-section">
+                        <h3 id="modal-description-title">Description</h3>
+                        <p id="modal-description"></p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Toast para favoritos -->
+              <div id="favorite-toast" class="favorite-toast">
+                <span id="favorite-toast-message"></span>
+              </div>
+              
+    <!-- La sección `<footer>` en el código HTML está creando el pie de página de la aplicación Marvel Universe Explorer. -->
+    <footer>
+        <div class="contact-section">
+            <a href="https://www.instagram.com" target="_blank" class="instagram-link">
+                <i class="fab fa-instagram"></i> Follow us on Instagram
+            </a>
+        </div>
+        <p id="datos" data-i18n="footer.developed"></p>
+        <div class="copyright">
+            <p data-i18n="footer.rights"></p>
+            <p data-i18n="footer.marvelInfo"></p>
+            <p data-i18n="footer.educational"></p>
+        </div>
+    </footer>
+    
+    <!-- Script para favoritos -->
+    <script src="favorites.js"></script>
+    
+<script src="main.js"></script>
+</body>
+
+</html>
