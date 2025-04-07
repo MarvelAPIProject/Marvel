@@ -1,4 +1,8 @@
 {
-    "docwriter.style": "Auto-detect",
-    "java.configuration.updateBuildConfiguration": "interactive"
+    "java.project.sourcePaths": ["src"],
+    "java.project.outputPath": "bin",
+    "java.project.referencedLibraries": [
+        "lib/**/*.jar"
+    ],
+    "liveServer.settings.port": 5501
 }
