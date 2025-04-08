@@ -78,7 +78,8 @@ CREATE TABLE EVENTO (
     nombre VARCHAR(255),
     descripcion TEXT,
     fecha_inicio DATE,
-    fecha_fin DATE
+    fecha_fin DATE,
+    url_imagen VARCHAR(200)
 );
 
 
@@ -167,6 +168,29 @@ CROSS JOIN PERSONAJE p
 WHERE (c.id_comic % 5 = p.id_personaje % 5)
 LIMIT 50;
 
+-- Asegurar que todos los personajes tengan al menos un cómic relacionado
+INSERT IGNORE INTO COMIC_PERSONAJE (id_comic, id_personaje)
+SELECT 
+    (SELECT id_comic FROM COMIC ORDER BY RAND() LIMIT 1) as id_comic,
+    p.id_personaje
+FROM PERSONAJE p
+WHERE p.id_personaje NOT IN (
+    SELECT DISTINCT id_personaje FROM COMIC_PERSONAJE
+);
+
+-- Añadir más relaciones para que cada personaje tenga varios cómics
+INSERT IGNORE INTO COMIC_PERSONAJE (id_comic, id_personaje)
+SELECT 
+    c.id_comic,
+    p.id_personaje
+FROM 
+    PERSONAJE p
+CROSS JOIN 
+    (SELECT id_comic FROM COMIC ORDER BY RAND() LIMIT 20) c
+WHERE 
+    (p.id_personaje % 10) = (c.id_comic % 10)
+ON DUPLICATE KEY IGNORE;
+
 -- Actualizar URLs de imágenes para los personajes si están vacías
 UPDATE PERSONAJE
 SET URL_imagen = CASE 
@@ -201,5 +225,21 @@ WHERE URL_imagen IS NULL OR URL_imagen = '';
 INSERT IGNORE INTO USUARIO (id_usuario, nombre, email)
 VALUES (1, 'Usuario Demo', 'usuario@ejemplo.com');
 
-ALTER TABLE EVENTO ADD COLUMN url_imagen VARCHAR(200);
+-- Actualizar URLs de imágenes para los eventos si están vacías
+UPDATE EVENTO
+SET url_imagen = CASE 
+    WHEN id_evento % 12 = 0 THEN 'https://cdn.marvel.com/content/1x/civil_war_01.jpg'
+    WHEN id_evento % 12 = 1 THEN 'https://cdn.marvel.com/content/1x/infinity_01.jpg'
+    WHEN id_evento % 12 = 2 THEN 'https://cdn.marvel.com/content/1x/secret_wars_01.jpg'
+    WHEN id_evento % 12 = 3 THEN 'https://cdn.marvel.com/content/1x/age_of_apocalypse_01.jpg'
+    WHEN id_evento % 12 = 4 THEN 'https://cdn.marvel.com/content/1x/house_of_m_01.jpg'
+    WHEN id_evento % 12 = 5 THEN 'https://cdn.marvel.com/content/1x/dark_phoenix_saga_01.jpg'
+    WHEN id_evento % 12 = 6 THEN 'https://cdn.marvel.com/content/1x/secret_invasion_01.jpg'
+    WHEN id_evento % 12 = 7 THEN 'https://cdn.marvel.com/content/1x/avengers_vs_xmen_01.jpg'
+    WHEN id_evento % 12 = 8 THEN 'https://cdn.marvel.com/content/1x/king_in_black_01.jpg'
+    WHEN id_evento % 12 = 9 THEN 'https://cdn.marvel.com/content/1x/inferno_01.jpg'
+    WHEN id_evento % 12 = 10 THEN 'https://cdn.marvel.com/content/1x/empyre_01.jpg'
+    ELSE 'https://cdn.marvel.com/content/1x/annihilation_01.jpg'
+END
+WHERE url_imagen IS NULL OR url_imagen = '';
 

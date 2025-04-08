@@ -191,6 +191,11 @@ header {
     position: relative;
     display: inline-block;
     height: 4rem;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    max-width: 100%;
+    width: 100%;
 }
 
 .character-name::after {
@@ -227,6 +232,22 @@ header {
     display: flex;
     align-items: center;
     transition: all 0.3s ease;
+}
+
+/* Estilo específico para mostrar el contador de cómics */
+.comics-count-badge {
+    background-color: rgba(230, 36, 41, 0.6);
+    color: var(--blanquito);
+    font-weight: 700;
+    text-align: center;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.character-card:hover .comics-count-badge {
+    background-color: var(--rojito);
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
+    transform: translateY(-2px);
 }
 
 .character-card:hover .character-comics {
@@ -812,6 +833,22 @@ footer {
     margin: 8px 0;
 }
 
+/* Estilos para el contador de cómics en el modal */
+.comics-counter {
+    color: var(--rojito);
+    font-weight: bold;
+    font-size: 1.2rem;
+    background-color: rgba(230, 36, 41, 0.1);
+    padding: 2px 8px;
+    border-radius: 4px;
+    margin-left: 5px;
+    display: inline-block;
+}
+
+.comics-label {
+    font-weight: 500;
+}
+
 /* Style for "View More" button replacing comics count */
 .view-more-btn {
     background-color: var(--rojito);
@@ -843,6 +880,41 @@ footer {
 }
 
 .view-more-btn:hover::after {
+    transform: translateX(3px);
+}
+
+/* Estilo para el botón "Ver más" */
+.ver-mas-btn {
+    background-color: var(--rojito);
+    color: var(--blanquito);
+    padding: 8px 15px;
+    border: none;
+    border-radius: 20px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 10px;
+}
+
+.ver-mas-btn:hover {
+    background-color: #c41f24;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.3);
+}
+
+.ver-mas-btn::after {
+    content: '→';
+    margin-left: 5px;
+    font-size: 1rem;
+    transition: transform 0.2s ease;
+}
+
+.ver-mas-btn:hover::after {
     transform: translateX(3px);
 }
 

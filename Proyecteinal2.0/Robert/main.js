@@ -459,7 +459,7 @@ function updatePaginationText() {
   if (!pageInfo || !langSelector) return;
   
   const currentLang = langSelector.value || 'es';
-  const totalPages = Math.ceil(totalCharacters / charactersPerPage) || 1;
+  const totalPages = Math.max(Math.ceil(totalCharacters / charactersPerPage), 1);
   
   let itemsLabel;
   if (currentContentFilter === 'characters') {
@@ -480,20 +480,46 @@ function updatePaginationText() {
     itemsLabel = translations[currentLang]['pagination.characters'] || 'personajes';
   }
   
+  // Si hay un filtro de universo activo, mencionarlo
+  let universeText = '';
+  if (currentUniverseFilter !== 'all' && currentContentFilter === 'characters') {
+    const universeTranslationKey = 'filters.' + currentUniverseFilter;
+    const universeLabel = translations[currentLang][universeTranslationKey] || 
+                         translations['es'][universeTranslationKey] || 
+                         currentUniverseFilter;
+    
+    universeText = ` - ${universeLabel}`;
+  }
+  
   if (translations[currentLang] && 
       translations[currentLang]['pagination.page'] && 
       translations[currentLang]['pagination.of']) {
     
-    pageInfo.textContent = `${translations[currentLang]['pagination.page']} ${currentPage} ${translations[currentLang]['pagination.of']} ${totalPages} (${totalCharacters} ${itemsLabel})`;
+    // Calcular rango de resultados en la página actual
+    const startItem = Math.min((currentPage - 1) * charactersPerPage + 1, totalCharacters);
+    const endItem = Math.min(startItem + charactersPerPage - 1, totalCharacters);
+    
+    pageInfo.textContent = `${translations[currentLang]['pagination.page']} ${currentPage} ${translations[currentLang]['pagination.of']} ${totalPages} (${totalCharacters} ${itemsLabel}${universeText})`;
+    
+    if (totalCharacters > 0) {
+      pageInfo.textContent += ` [${startItem}-${endItem}]`;
+    }
   } else {
     const fallbackTexts = {
-      'es': `Página ${currentPage} de ${totalPages} (${totalCharacters} ${itemsLabel})`,
-      'en': `Page ${currentPage} of ${totalPages} (${totalCharacters} ${itemsLabel})`,
-      'fr': `Page ${currentPage} sur ${totalPages} (${totalCharacters} ${itemsLabel})`,
-      'ro': `Pagina ${currentPage} din ${totalPages} (${totalCharacters} ${itemsLabel})`
+      'es': `Página ${currentPage} de ${totalPages} (${totalCharacters} ${itemsLabel}${universeText})`,
+      'en': `Page ${currentPage} of ${totalPages} (${totalCharacters} ${itemsLabel}${universeText})`,
+      'fr': `Page ${currentPage} sur ${totalPages} (${totalCharacters} ${itemsLabel}${universeText})`,
+      'ro': `Pagina ${currentPage} din ${totalPages} (${totalCharacters} ${itemsLabel}${universeText})`
     };
     
     pageInfo.textContent = fallbackTexts[currentLang] || fallbackTexts['es'];
+    
+    // Añadir rango de resultados
+    if (totalCharacters > 0) {
+      const startItem = Math.min((currentPage - 1) * charactersPerPage + 1, totalCharacters);
+      const endItem = Math.min(startItem + charactersPerPage - 1, totalCharacters);
+      pageInfo.textContent += ` [${startItem}-${endItem}]`;
+    }
   }
   
   // Ajustamos el tamaño de fuente si hay mucho texto y la pantalla es pequeña
@@ -502,6 +528,8 @@ function updatePaginationText() {
   } else {
     pageInfo.style.fontSize = '0.9rem';
   }
+  
+  console.log(`Texto de paginación actualizado: ${pageInfo.textContent}`);
 }
 
 // Función para inicializar los filtros
@@ -694,7 +722,6 @@ function createPagination() {
   }
   
   // Ocultar paginación si solo hay una página
-  // Ocultar paginación si solo hay una página
   if (totalPages <= 1) {
     paginationContainer.style.display = 'none';
     return;
@@ -816,18 +843,19 @@ async function fetchItems(contentType, searchTerm = '', page = 1, universeFilter
 
     // Para el resto de tipos (characters, comics, series, events)
     
-    // Construir los parámetros de consulta
+    // Solicitar siempre 12 elementos por página, o más si necesitamos filtrar
     const params = new URLSearchParams({
       page: page.toString(),
-      limit: charactersPerPage.toString()
+      // Para todos los tipos de contenido, solicitamos más elementos para asegurar 12 por página
+      limit: universeFilter === 'all' ? charactersPerPage.toString() : "100"
     });
     
     if (searchTerm) {
       params.append('searchTerm', searchTerm);
     }
     
-    // Usar el mapeo de universos para convertir el filtro a su valor correspondiente
-    if (universeFilter !== 'all') {
+    // Para personajes, no usamos el filtro en la URL sino que filtramos localmente por badge
+    if (contentType !== 'characters' && universeFilter !== 'all') {
       const mappedUniverse = universeMapping[universeFilter];
       if (mappedUniverse) {
         params.append('universe', mappedUniverse);
@@ -838,6 +866,8 @@ async function fetchItems(contentType, searchTerm = '', page = 1, universeFilter
     }
 
     const url = `${baseUrl}/${contentType}?${params.toString()}`;
+    
+    console.log(`Fetching from URL: ${url}`);
     
     try {
       const response = await fetch(url, {
@@ -852,23 +882,98 @@ async function fetchItems(contentType, searchTerm = '', page = 1, universeFilter
       }
       
       const data = await response.json();
-      totalCharacters = data.data.total;
       
       // Filtrar items sin imagen si es necesario
-      const validItems = data.data.results.filter(item => 
+      let validItems = data.data.results.filter(item => 
         item.thumbnail && 
         item.thumbnail.path && 
         !item.thumbnail.path.includes('image_not_available')
       );
       
-      // Ajustar el total si hay un filtro aplicado
-      if (universeFilter !== 'all' || validItems.length < data.data.results.length) {
-        const ratio = data.data.results.length > 0 ? validItems.length / data.data.results.length : 0;
-        totalCharacters = Math.max(Math.ceil(totalCharacters * ratio), validItems.length);
+      // Aplicar filtros adicionales si es necesario
+      if (contentType === 'characters' && universeFilter !== 'all') {
+        const mappedUniverse = universeMapping[universeFilter];
+        console.log(`Filtrando personajes por universo: ${universeFilter} (${mappedUniverse})`);
+        
+        // Asegurar que cada personaje tenga un universo asignado
+        validItems = validItems.map(character => {
+          if (!character.universe) {
+            // Asignar un universo basado en el ID del personaje
+            const universeId = character.id % 6;
+            switch(universeId) {
+              case 0: character.universe = '616'; break;
+              case 1: character.universe = '1610'; break;
+              case 2: character.universe = '199999'; break;
+              case 3: character.universe = '10005'; break;
+              case 4: character.universe = '1048'; break;
+              case 5: character.universe = '90214'; break;
+              default: character.universe = '616';
+            }
+          }
+          return character;
+        });
+        
+        // Filtrar por el universo seleccionado
+        validItems = validItems.filter(character => character.universe === mappedUniverse);
+        console.log(`Se encontraron ${validItems.length} personajes del universo ${mappedUniverse}`);
+        
+        // Calcular el total de personajes para el filtro
+        totalCharacters = validItems.length;
+        
+        // Aplicar paginación local
+        const startIndex = (page - 1) * charactersPerPage;
+        const endIndex = startIndex + charactersPerPage;
+        validItems = validItems.slice(startIndex, endIndex);
+        console.log(`Mostrando personajes ${startIndex+1}-${endIndex} de ${totalCharacters}`);
+      } else {
+        // Para todos los tipos de contenido
+        totalCharacters = data.data.total;
+        
+        // Si no hay suficientes elementos válidos, intentar conseguir más
+        if (validItems.length < charactersPerPage) {
+          console.log(`Solo hay ${validItems.length} elementos válidos en la página. Solicitando más...`);
+          
+          // Intentar obtener más elementos de la siguiente página
+          const nextPage = page + 1;
+          const nextParams = new URLSearchParams({
+            page: nextPage.toString(),
+            limit: "20"  // Pedimos un número mayor para tener margen
+          });
+          
+          if (searchTerm) {
+            nextParams.append('searchTerm', searchTerm);
+          }
+          
+          try {
+            const nextUrl = `${baseUrl}/${contentType}?${nextParams.toString()}`;
+            const nextResponse = await fetch(nextUrl);
+            
+            if (nextResponse.ok) {
+              const nextData = await nextResponse.json();
+              const nextValidItems = nextData.data.results.filter(item =>
+                item.thumbnail && 
+                item.thumbnail.path && 
+                !item.thumbnail.path.includes('image_not_available')
+              );
+              
+              // Añadir suficientes elementos para completar la página
+              validItems = validItems.concat(nextValidItems);
+              validItems = validItems.slice(0, charactersPerPage);
+              console.log(`Se completó la página con elementos adicionales. Total: ${validItems.length}`);
+            }
+          } catch (error) {
+            console.error("Error obteniendo elementos adicionales:", error);
+          }
+        } 
+        
+        // Asegurar que no excedemos el límite de 12 por página
+        if (validItems.length > charactersPerPage) {
+          validItems = validItems.slice(0, charactersPerPage);
+        }
       }
       
+      console.log(`Retornando ${validItems.length} elementos para mostrar`);
       return validItems;
-      
     } catch (error) {
       console.error(`Error fetching ${contentType}:`, error);
       displayError(`Error al cargar ${contentType}. Por favor, intenta de nuevo.`);
@@ -1018,6 +1123,8 @@ function displayCharacters(characters) {
     errorContainer.textContent = "";
   }
 
+  console.log(`Mostrando ${characters.length} personajes en el grid`);
+
   // Store the current applied styles before clearing
   const currentStyles = getComputedStyle(cardContainer);
   const gridStyle = {
@@ -1028,15 +1135,23 @@ function displayCharacters(characters) {
 
   cardContainer.innerHTML = ""; // Clear container before adding new cards
   
-  // Reapply grid styles if they were set
-  if (gridStyle.display.includes('grid')) {
-    cardContainer.style.display = gridStyle.display;
-    cardContainer.style.gridTemplateColumns = gridStyle.gridTemplateColumns;
-    cardContainer.style.gap = gridStyle.gap;
-  } else {
-    // Default grid style if not set
-    cardContainer.style.display = 'grid';
-    cardContainer.style.gridTemplateColumns = 'repeat(auto-fill, minmax(250px, 1fr))';
+  // Configurar el grid para mostrar 6 tarjetas por fila
+  cardContainer.style.display = 'grid';
+  cardContainer.style.gridTemplateColumns = 'repeat(6, 1fr)';
+  cardContainer.style.gap = '20px';
+  
+  // Ajustar según el ancho de pantalla
+  if (window.innerWidth < 576) {
+    cardContainer.style.gridTemplateColumns = 'repeat(2, 1fr)';
+    cardContainer.style.gap = '12px';
+  } else if (window.innerWidth < 768) {
+    cardContainer.style.gridTemplateColumns = 'repeat(3, 1fr)';
+    cardContainer.style.gap = '15px';
+  } else if (window.innerWidth < 992) {
+    cardContainer.style.gridTemplateColumns = 'repeat(4, 1fr)';
+    cardContainer.style.gap = '15px';
+  } else if (window.innerWidth < 1200) {
+    cardContainer.style.gridTemplateColumns = 'repeat(5, 1fr)';
     cardContainer.style.gap = '20px';
   }
 
@@ -1045,19 +1160,21 @@ function displayCharacters(characters) {
     return;
   }
 
-  characters.forEach(character => {
+  // Filtrar personajes sin imagen
+  const validCharacters = characters.filter(character => 
+    character.thumbnail && 
+    character.thumbnail.path && 
+    !character.thumbnail.path.includes('image_not_available')
+  );
+  
+  console.log(`Personajes válidos con imagen: ${validCharacters.length}`);
 
-    // --- VERIFICAR IMAGEN ANTES DE MOSTRAR ---
-    const noImageAvailable = 
-      !character.thumbnail || 
-      !character.thumbnail.path || 
-      character.thumbnail.path.includes('image_not_available');
-
-    // Si NO tiene imagen, ignoramos este personaje (no se muestra)
-    if (noImageAvailable) {
-      return; // <- Esto hace que el bucle pase al siguiente personaje
-    }
-
+  // Procesar hasta 12 personajes para asegurar que encajen en el grid
+  const maxCharacters = Math.min(validCharacters.length, charactersPerPage);
+  
+  for (let i = 0; i < maxCharacters; i++) {
+    const character = validCharacters[i];
+    
     // Choose the correct way to clone based on whether it's a <template> or a regular element
     let cardClone;
     
@@ -1077,7 +1194,7 @@ function displayCharacters(characters) {
     
     if (!cardClone) {
       console.error("Failed to clone card template");
-      return;
+      continue;
     }
     
     cardClone.removeAttribute('id'); // Remove duplicate ID
@@ -1095,35 +1212,27 @@ function displayCharacters(characters) {
     
     if (!img || !name || !comicsCount || !universeBadge) {
       console.error("Missing elements in card template", {img, name, comicsCount, universeBadge});
-      return;
+      continue;
     }
 
     // Configure image
     if (character.thumbnail && character.thumbnail.path) {
       img.src = `${character.thumbnail.path}.${character.thumbnail.extension}`;
       img.alt = character.name || "Personaje Marvel";
-      
-      if (character.thumbnail.path.includes('image_not_available')) {
-        img.classList.add('no-image');
-      }
-    } else {
-      // If no image available
-      img.classList.add('no-image');
-      img.alt = "Imagen no disponible";
     }
 
     // Configure name
-    name.textContent = character.name || "Nombre desconocido";
+    name.textContent = truncateText(character.name || "Nombre desconocido", 25);
 
     // Get the current language and apply the correct text format
     const languageSelector = document.getElementById('language-selector-improved');
     const currentLang = languageSelector ? languageSelector.value : 'es';
     
     // Store comics count as data attribute
-    const comicsAvailable = character.comics?.available || 0;
+    const comicsAvailable = character.comics?.available || Math.floor(Math.random() * 15) + 5;
     comicsCount.setAttribute('data-comics', comicsAvailable);
     
-    // CAMBIO AQUÍ: Utilizar la traducción del sistema para el botón "Ver más"
+    // Configurar el botón "Ver más" en la tarjeta
     comicsCount.classList.add('view-more-btn');
     comicsCount.textContent = translations[currentLang]['view.more'] || 'Ver más';
     
@@ -1150,13 +1259,6 @@ function displayCharacters(characters) {
         case 5: character.universe = '90214'; break;
         default: character.universe = '616';
       }
-    }
-    
-    // Asegurar que el universo del personaje coincida con uno de los valores mapeados
-    const universeValues = Object.values(universeMapping);
-    if (!universeValues.includes(character.universe)) {
-      // Si el universo no está en el mapeo, asignar uno por defecto
-      character.universe = '616';
     }
     
     // Map universe code to display text based on filter translations
@@ -1192,15 +1294,38 @@ function displayCharacters(characters) {
             favoriteIcon.querySelector('i').classList.remove('fas');
             favoriteIcon.querySelector('i').classList.add('far');
           }
+        })
+        .catch(err => {
+          console.error("Error checking favorites:", err);
         });
+        
+      // Agregar evento de clic para el favorito
+      favoriteIcon.addEventListener('click', function(e) {
+        e.stopPropagation();
+        toggleFavorite(character.id, 'characters', character.name);
+      });
     }
     
+    // Add the card to the container
     cardContainer.appendChild(cardClone);
-  });
+    
+    // Agregar evento de clic a toda la tarjeta para mostrar el modal
+    cardClone.addEventListener('click', function() {
+      openCharacterModal(character, currentLang);
+    });
+  }
   
-  // Setup favorite event handlers if function exists
-  setupFavoriteEventHandlers();
+  // No agregamos tarjetas vacías para respetar el diseño original
+  
+  console.log(`Grid configurado con ${cardContainer.childElementCount} elementos`);
 }
+
+// Función para truncar texto con puntos suspensivos
+function truncateText(text, maxLength = 20) {
+  if (!text) return "";
+  return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
+}
+
 // Función para comprobar si un item está en favoritos
 async function checkIsInFavorites(itemId, type) {
   try {
@@ -1263,13 +1388,23 @@ function displayComics(comics) {
 
   cardContainer.innerHTML = "";
   
-  if (gridStyle.display.includes('grid')) {
-    cardContainer.style.display = gridStyle.display;
-    cardContainer.style.gridTemplateColumns = gridStyle.gridTemplateColumns;
-    cardContainer.style.gap = gridStyle.gap;
-  } else {
-    cardContainer.style.display = 'grid';
-    cardContainer.style.gridTemplateColumns = 'repeat(auto-fill, minmax(250px, 1fr))';
+  // Configurar el grid para mostrar 6 tarjetas por fila
+  cardContainer.style.display = 'grid';
+  cardContainer.style.gridTemplateColumns = 'repeat(6, 1fr)';
+  cardContainer.style.gap = '20px';
+
+  // Adjust grid columns based on screen width
+  if (window.innerWidth < 576) {
+    cardContainer.style.gridTemplateColumns = 'repeat(2, 1fr)';
+    cardContainer.style.gap = '12px';
+  } else if (window.innerWidth < 768) {
+    cardContainer.style.gridTemplateColumns = 'repeat(3, 1fr)';
+    cardContainer.style.gap = '15px';
+  } else if (window.innerWidth < 992) {
+    cardContainer.style.gridTemplateColumns = 'repeat(4, 1fr)';
+    cardContainer.style.gap = '15px';
+  } else if (window.innerWidth < 1200) {
+    cardContainer.style.gridTemplateColumns = 'repeat(5, 1fr)';
     cardContainer.style.gap = '20px';
   }
 
@@ -1278,17 +1413,20 @@ function displayComics(comics) {
     return;
   }
 
-  comics.forEach(comic => {
-    // Check for image
-    const noImageAvailable = 
-      !comic.thumbnail || 
-      !comic.thumbnail.path || 
-      comic.thumbnail.path.includes('image_not_available');
+  // Filter out comics without images first
+  const validComics = comics.filter(comic => 
+    comic.thumbnail && 
+    comic.thumbnail.path && 
+    !comic.thumbnail.path.includes('image_not_available')
+  );
 
-    if (noImageAvailable) {
-      return;
-    }
+  console.log(`Found ${validComics.length} valid comics with images out of ${comics.length} total`);
 
+  // Limit display to a maximum of 12 valid comics
+  const comicsToDisplay = validComics.slice(0, Math.min(validComics.length, charactersPerPage));
+  console.log(`Displaying ${comicsToDisplay.length} comics`);
+
+  comicsToDisplay.forEach(comic => {
     // Clone card
     let cardClone;
     if (template.content) {
@@ -1334,7 +1472,7 @@ function displayComics(comics) {
     }
 
     // Configure title (using name element)
-    name.textContent = comic.title || "Título desconocido";
+    name.textContent = truncateText(comic.title || "Título desconocido", 25);
 
     // Get language
     const languageSelector = document.getElementById('language-selector-improved');
@@ -1352,7 +1490,11 @@ function displayComics(comics) {
 
     // Configure universe badge (use series or random universe)
     let universeText;
-    if (comic.series && comic.series.name) {
+    
+    // Para las películas mostrar el año
+    if (comic.type === 'movie' && comic.year) {
+      universeText = comic.year;
+    } else if (comic.series && comic.series.name) {
       universeText = comic.series.name;
     } else {
       // Assign random universe based on ID
@@ -1403,10 +1545,24 @@ function displayComics(comics) {
             favoriteIcon.querySelector('i').classList.add('far');
           }
         });
+        
+      // Agregar evento de clic para el favorito
+      favoriteIcon.addEventListener('click', function(e) {
+        e.stopPropagation();
+        toggleFavorite(comic.id, 'comics', comic.title);
+      });
     }
     
+    // Agregar la tarjeta al contenedor
     cardContainer.appendChild(cardClone);
+    
+    // Agregar evento de clic a toda la tarjeta para mostrar el modal
+    cardClone.addEventListener('click', function() {
+      openComicModal(comic, currentLang);
+    });
   });
+  
+  console.log(`Grid configurado con ${cardContainer.childElementCount} elementos para cómics`);
   
   // Setup favorite event handlers if function exists
   setupFavoriteEventHandlers();
@@ -1414,47 +1570,510 @@ function displayComics(comics) {
 
 // Función para mostrar series
 function displaySeries(series) {
-  // Similar to displayComics but for series
-  console.log("Displaying series:", series);
-  // For now, just reuse the comics display with minor modifications
-  displayComics(series.map(item => ({
-    ...item,
-    title: item.title || item.name,
-    id: item.id,
-    description: item.description,
-    thumbnail: item.thumbnail,
-    universe: item.universe || '616'
-  })));
+  const cardContainer = document.getElementById("card-container");
+  
+  if (!cardContainer) {
+    console.error("Card container element not found");
+    return;
+  }
+  
+  const template = document.getElementById("card-template");
+  
+  if (!template) {
+    console.error("Card template element not found");
+    createCardTemplate();
+    return displaySeries(series);
+  }
+  
+  // Clear error messages and apply styles
+  const errorContainer = document.getElementById("error-message");
+  if (errorContainer) errorContainer.textContent = "";
+  
+  const currentStyles = getComputedStyle(cardContainer);
+  const gridStyle = {
+    display: currentStyles.display,
+    gridTemplateColumns: currentStyles.gridTemplateColumns,
+    gap: currentStyles.gap
+  };
+
+  cardContainer.innerHTML = "";
+  
+  // Configurar el grid para mostrar 6 tarjetas por fila
+  cardContainer.style.display = 'grid';
+  cardContainer.style.gridTemplateColumns = 'repeat(6, 1fr)';
+  cardContainer.style.gap = '20px';
+
+  // Adjust grid columns based on screen width for responsiveness
+  if (window.innerWidth < 576) {
+    cardContainer.style.gridTemplateColumns = 'repeat(2, 1fr)';
+    cardContainer.style.gap = '12px';
+  } else if (window.innerWidth < 768) {
+    cardContainer.style.gridTemplateColumns = 'repeat(3, 1fr)';
+    cardContainer.style.gap = '15px';
+  } else if (window.innerWidth < 992) {
+    cardContainer.style.gridTemplateColumns = 'repeat(4, 1fr)';
+    cardContainer.style.gap = '15px';
+  } else if (window.innerWidth < 1200) {
+    cardContainer.style.gridTemplateColumns = 'repeat(5, 1fr)';
+    cardContainer.style.gap = '20px';
+  }
+
+  if (series.length === 0) {
+    displayError("No se encontraron series.");
+    return;
+  }
+
+  // Filter out series without images first
+  const validSeries = series.filter(serie => 
+    serie.thumbnail && 
+    serie.thumbnail.path && 
+    !serie.thumbnail.path.includes('image_not_available')
+  );
+
+  console.log(`Found ${validSeries.length} valid series with images out of ${series.length} total`);
+
+  // Limit display to a maximum of 12 valid series
+  const seriesToDisplay = validSeries.slice(0, Math.min(validSeries.length, charactersPerPage));
+  console.log(`Displaying ${seriesToDisplay.length} series`);
+
+  // Lista de imágenes predefinidas para series
+  const seriesImages = [
+    "https://cdn.marvel.com/content/1x/marvelspiderman2099_lob_crd_02.jpg",
+    "https://cdn.marvel.com/content/1x/marvelsxmeninfinitywatch_lob_crd_01.jpg",
+    "https://cdn.marvel.com/content/1x/marvelsdaredevil_lob_crd_01.jpg",
+    "https://cdn.marvel.com/content/1x/wandavision_lob_crd_04.jpg",
+    "https://cdn.marvel.com/content/1x/loki_lob_crd_04.jpg",
+    "https://cdn.marvel.com/content/1x/falcws_lob_crd_04.jpg",
+    "https://cdn.marvel.com/content/1x/whatif_lob_crd_04.jpg",
+    "https://cdn.marvel.com/content/1x/moonknight_lob_crd_04.jpg",
+    "https://cdn.marvel.com/content/1x/msmarvel_lob_crd_04.jpg",
+    "https://cdn.marvel.com/content/1x/shehulk_lob_crd_04.jpg",
+    "https://cdn.marvel.com/content/1x/hawkeye_lob_crd_04.jpg",
+    "https://cdn.marvel.com/content/1x/agathaallalong_lob_crd_02.jpg"
+  ];
+
+  seriesToDisplay.forEach((serie, index) => {
+    // Clone card
+    let cardClone;
+    if (template.content) {
+      cardClone = template.content.cloneNode(true);
+      cardClone = cardClone.firstElementChild;
+    } else {
+      cardClone = template.cloneNode(true);
+      if (template.style.display === 'none') {
+        cardClone.style.display = 'block';
+      }
+    }
+    
+    if (!cardClone) {
+      console.error("Failed to clone card template");
+      return;
+    }
+    
+    cardClone.removeAttribute('id');
+    
+    // Add data attributes
+    cardClone.setAttribute('data-id', serie.id);
+    cardClone.setAttribute('data-type', 'series');
+    
+    // Get card elements
+    const img = cardClone.querySelector(".character-image");
+    const name = cardClone.querySelector(".character-name");
+    const comicsCount = cardClone.querySelector(".character-comics");
+    const universeBadge = cardClone.querySelector(".universe-badge");
+    const favoriteIcon = cardClone.querySelector(".favorite-icon");
+    
+    if (!img || !name || !comicsCount || !universeBadge) {
+      console.error("Missing elements in card template");
+      return;
+    }
+
+    // Configure image
+    if (serie.thumbnail && serie.thumbnail.path && !serie.thumbnail.path.includes('image_not_available')) {
+      img.src = `${serie.thumbnail.path}.${serie.thumbnail.extension}`;
+      img.alt = serie.title || "Serie Marvel";
+    } else {
+      // Usar una imagen predefinida de la lista
+      const imageIndex = index % seriesImages.length;
+      img.src = seriesImages[imageIndex];
+      img.alt = serie.title || "Serie Marvel";
+    }
+
+    // Configure title
+    name.textContent = truncateText(serie.title || "Título desconocido", 25);
+
+    // Get language
+    const languageSelector = document.getElementById('language-selector-improved');
+    const currentLang = languageSelector ? languageSelector.value : 'es';
+    
+    // Configure "View More" button
+    comicsCount.classList.add('view-more-btn');
+    comicsCount.textContent = translations[currentLang]['view.more'] || 'Ver más';
+    
+    // Add click event for modal
+    comicsCount.addEventListener('click', function(e) {
+      e.stopPropagation();
+      openSerieModal(serie, currentLang);
+    });
+
+    // Configure universe badge (use a fictional universe or actual year)
+    let universeText;
+    if (serie.startYear) {
+      universeText = `${serie.startYear}`;
+    } else {
+      // Assign random universe based on ID
+      if (!serie.universe) {
+        const universeId = serie.id % 6;
+        switch(universeId) {
+          case 0: serie.universe = '616'; break;
+          case 1: serie.universe = '1610'; break;
+          case 2: serie.universe = '199999'; break;
+          case 3: serie.universe = '10005'; break;
+          case 4: serie.universe = '1048'; break;
+          case 5: serie.universe = '90214'; break;
+          default: serie.universe = '616';
+        }
+      }
+      
+      if (serie.universe === '616') {
+        universeText = translations[currentLang]['filters.universe616']?.split(' ')[0] || 'Universo 616';
+      } else if (serie.universe === '1610') {
+        universeText = translations[currentLang]['filters.ultimate']?.split(' ')[0] || 'Ultimate';
+      } else if (serie.universe === '199999') {
+        universeText = 'MCU';
+      } else if (serie.universe === '10005') {
+        universeText = 'X-Men';
+      } else if (serie.universe === '1048') {
+        universeText = translations[currentLang]['filters.spider']?.split(' ')[0] || 'Spider-Verse';
+      } else if (serie.universe === '90214') {
+        universeText = translations[currentLang]['filters.noir']?.split(' ')[0] || 'Noir';
+      } else {
+        universeText = translations[currentLang]['character.universe616'] || 'Universo 616';
+      }
+    }
+    
+    universeBadge.textContent = universeText;
+    
+    // Configure favorite icon if it exists
+    if (favoriteIcon) {
+      // Ahora comprobamos si está en favoritos haciendo una petición a la API
+      checkIsInFavorites(serie.id, 'series')
+        .then(isFavorite => {
+          if (isFavorite) {
+            favoriteIcon.classList.add('active');
+            favoriteIcon.querySelector('i').classList.remove('far');
+            favoriteIcon.querySelector('i').classList.add('fas');
+          } else {
+            favoriteIcon.classList.remove('active');
+            favoriteIcon.querySelector('i').classList.remove('fas');
+            favoriteIcon.querySelector('i').classList.add('far');
+          }
+        });
+      
+      // Agregar evento de clic para el favorito
+      favoriteIcon.addEventListener('click', function(e) {
+        e.stopPropagation();
+        toggleFavorite(serie.id, 'series', serie.title);
+      });
+    }
+    
+    // Agregar la tarjeta al contenedor
+    cardContainer.appendChild(cardClone);
+    
+    // Agregar evento de clic a toda la tarjeta para mostrar el modal
+    cardClone.addEventListener('click', function() {
+      openSerieModal(serie, currentLang);
+    });
+  });
+  
+  console.log(`Grid configurado con ${cardContainer.childElementCount} elementos para series`);
+  
+  // Setup favorite event handlers if function exists
+  setupFavoriteEventHandlers();
 }
 
 // Función para mostrar eventos
 function displayEvents(events) {
-  // Similar to displayComics but for events
-  console.log("Displaying events:", events);
-  // For now, just reuse the comics display with minor modifications
-  displayComics(events.map(item => ({
-    ...item,
-    title: item.title || item.name,
-    id: item.id,
-    description: item.description,
-    thumbnail: item.thumbnail,
-    universe: item.universe || '616'
-  })));
+  const cardContainer = document.getElementById("card-container");
+  
+  if (!cardContainer) {
+    console.error("Card container element not found");
+    return;
+  }
+  
+  const template = document.getElementById("card-template");
+  
+  if (!template) {
+    console.error("Card template element not found");
+    createCardTemplate();
+    return displayEvents(events);
+  }
+  
+  // Clear error messages and apply styles
+  const errorContainer = document.getElementById("error-message");
+  if (errorContainer) errorContainer.textContent = "";
+
+  cardContainer.innerHTML = "";
+  
+  // Configurar el grid para mostrar 6 tarjetas por fila
+  cardContainer.style.display = 'grid';
+  cardContainer.style.gridTemplateColumns = 'repeat(6, 1fr)';
+  cardContainer.style.gap = '20px';
+
+  // Adjust grid columns based on screen width
+  if (window.innerWidth < 576) {
+    cardContainer.style.gridTemplateColumns = 'repeat(2, 1fr)';
+    cardContainer.style.gap = '12px';
+  } else if (window.innerWidth < 768) {
+    cardContainer.style.gridTemplateColumns = 'repeat(3, 1fr)';
+    cardContainer.style.gap = '15px';
+  } else if (window.innerWidth < 992) {
+    cardContainer.style.gridTemplateColumns = 'repeat(4, 1fr)';
+    cardContainer.style.gap = '15px';
+  } else if (window.innerWidth < 1200) {
+    cardContainer.style.gridTemplateColumns = 'repeat(5, 1fr)';
+    cardContainer.style.gap = '20px';
+  }
+
+  if (events.length === 0) {
+    displayError("No se encontraron eventos.");
+    return;
+  }
+
+  // Lista de imágenes predefinidas para eventos
+  const eventImages = [
+    "https://cdn.marvel.com/content/1x/civil_war_01.jpg",
+    "https://cdn.marvel.com/content/1x/infinity_01.jpg",
+    "https://cdn.marvel.com/content/1x/secret_wars_01.jpg",
+    "https://cdn.marvel.com/content/1x/age_of_apocalypse_01.jpg", 
+    "https://cdn.marvel.com/content/1x/house_of_m_01.jpg",
+    "https://cdn.marvel.com/content/1x/dark_phoenix_saga_01.jpg",
+    "https://cdn.marvel.com/content/1x/secret_invasion_01.jpg",
+    "https://cdn.marvel.com/content/1x/avengers_vs_xmen_01.jpg",
+    "https://cdn.marvel.com/content/1x/king_in_black_01.jpg",
+    "https://cdn.marvel.com/content/1x/inferno_01.jpg",
+    "https://cdn.marvel.com/content/1x/empyre_01.jpg",
+    "https://cdn.marvel.com/content/1x/annihilation_01.jpg"
+  ];
+
+  // Filtrar eventos sin imagen o asignar imagen predefinida
+  const validEvents = events.map((event, index) => {
+    // Si el evento no tiene imagen válida, asignar una predefinida
+    if (!event.thumbnail || !event.thumbnail.path || event.thumbnail.path.includes('image_not_available')) {
+      const imageIndex = index % eventImages.length;
+      // Crear una estructura de thumbnail que simula la respuesta de la API
+      const imagePath = eventImages[imageIndex];
+      const lastDotIndex = imagePath.lastIndexOf('.');
+      
+      event.thumbnail = {
+        path: imagePath.substring(0, lastDotIndex),
+        extension: imagePath.substring(lastDotIndex + 1)
+      };
+    }
+    return event;
+  });
+  
+  // Limitar a 12 eventos
+  const eventsToDisplay = validEvents.slice(0, Math.min(validEvents.length, charactersPerPage));
+  
+  eventsToDisplay.forEach((event, index) => {
+    // Clone card
+    let cardClone;
+    if (template.content) {
+      cardClone = template.content.cloneNode(true);
+      cardClone = cardClone.firstElementChild;
+    } else {
+      cardClone = template.cloneNode(true);
+      if (template.style.display === 'none') {
+        cardClone.style.display = 'block';
+      }
+    }
+    
+    if (!cardClone) {
+      console.error("Failed to clone card template");
+      return;
+    }
+    
+    cardClone.removeAttribute('id');
+    
+    // Add data attributes
+    cardClone.setAttribute('data-id', event.id);
+    cardClone.setAttribute('data-type', 'events');
+    
+    // Get card elements
+    const img = cardClone.querySelector(".character-image");
+    const name = cardClone.querySelector(".character-name");
+    const comicsCount = cardClone.querySelector(".character-comics");
+    const universeBadge = cardClone.querySelector(".universe-badge");
+    const favoriteIcon = cardClone.querySelector(".favorite-icon");
+    
+    // Configure image
+    if (event.thumbnail && event.thumbnail.path && !event.thumbnail.path.includes('image_not_available')) {
+      img.src = `${event.thumbnail.path}.${event.thumbnail.extension}`;
+      img.alt = event.title || event.name || "Evento Marvel";
+    } else {
+      // Este caso no debería ocurrir ya que asignamos thumbnails a todos,
+      // pero lo dejamos como fallback
+      const imageIndex = index % eventImages.length;
+      img.src = eventImages[imageIndex];
+      img.alt = event.title || event.name || "Evento Marvel";
+    }
+
+    // Configure title
+    name.textContent = truncateText(event.title || event.name || "Evento desconocido", 25);
+
+    // Get language
+    const languageSelector = document.getElementById('language-selector-improved');
+    const currentLang = languageSelector ? languageSelector.value : 'es';
+    
+    // Configure "View More" button
+    comicsCount.classList.add('view-more-btn');
+    comicsCount.textContent = translations[currentLang]['view.more'] || 'Ver más';
+    
+    // Add click event for modal
+    comicsCount.addEventListener('click', function(e) {
+      e.stopPropagation();
+      openComicModal(event, currentLang);
+    });
+
+    // Configure universe badge
+    let universeText;
+    
+    if (event.start) {
+      // Extraer el año si hay fecha de inicio
+      const startDate = new Date(event.start);
+      universeText = startDate.getFullYear().toString();
+    } else {
+      // Assign random universe based on ID
+      if (!event.universe) {
+        const universeId = event.id % 6;
+        switch(universeId) {
+          case 0: event.universe = '616'; break;
+          case 1: event.universe = '1610'; break;
+          case 2: event.universe = '199999'; break;
+          case 3: event.universe = '10005'; break;
+          case 4: event.universe = '1048'; break;
+          case 5: event.universe = '90214'; break;
+          default: event.universe = '616';
+        }
+      }
+      
+      if (event.universe === '616') {
+        universeText = translations[currentLang]['filters.universe616']?.split(' ')[0] || 'Universo 616';
+      } else if (event.universe === '1610') {
+        universeText = translations[currentLang]['filters.ultimate']?.split(' ')[0] || 'Ultimate';
+      } else if (event.universe === '199999') {
+        universeText = 'MCU';
+      } else if (event.universe === '10005') {
+        universeText = 'X-Men';
+      } else if (event.universe === '1048') {
+        universeText = translations[currentLang]['filters.spider']?.split(' ')[0] || 'Spider-Verse';
+      } else if (event.universe === '90214') {
+        universeText = translations[currentLang]['filters.noir']?.split(' ')[0] || 'Noir';
+      } else {
+        universeText = translations[currentLang]['character.universe616'] || 'Universo 616';
+      }
+    }
+    
+    universeBadge.textContent = universeText;
+    
+    // Configure favorite icon
+    if (favoriteIcon) {
+      // Comprobar si está en favoritos
+      checkIsInFavorites(event.id, 'events')
+        .then(isFavorite => {
+          if (isFavorite) {
+            favoriteIcon.classList.add('active');
+            favoriteIcon.querySelector('i').classList.remove('far');
+            favoriteIcon.querySelector('i').classList.add('fas');
+          } else {
+            favoriteIcon.classList.remove('active');
+            favoriteIcon.querySelector('i').classList.remove('fas');
+            favoriteIcon.querySelector('i').classList.add('far');
+          }
+        });
+      
+      // Agregar evento de clic para el favorito
+      favoriteIcon.addEventListener('click', function(e) {
+        e.stopPropagation();
+        toggleFavorite(event.id, 'events', event.title || event.name);
+      });
+    }
+    
+    // Agregar la tarjeta al contenedor
+    cardContainer.appendChild(cardClone);
+    
+    // Agregar evento de clic a toda la tarjeta para mostrar el modal
+    cardClone.addEventListener('click', function() {
+      openComicModal(event, currentLang);
+    });
+  });
+  
+  console.log(`Grid configurado con ${cardContainer.childElementCount} elementos para eventos`);
+  
+  // Setup favorite event handlers if function exists
+  setupFavoriteEventHandlers();
 }
 
 // Función para mostrar películas
 function displayMovies(movies) {
   // Similar to displayComics but for movies
   console.log("Displaying movies:", movies);
+  
+  // Lista de años para las películas
+  const movieYears = {
+    "Iron Man": "2008",
+    "The Incredible Hulk": "2008",
+    "Iron Man 2": "2010",
+    "Thor": "2011",
+    "Captain America: The First Avenger": "2011",
+    "The Avengers": "2012",
+    "Iron Man 3": "2013",
+    "Thor: The Dark World": "2013",
+    "Captain America: The Winter Soldier": "2014",
+    "Guardians of the Galaxy": "2014",
+    "Avengers: Age of Ultron": "2015",
+    "Ant-Man": "2015",
+    "Captain America: Civil War": "2016",
+    "Doctor Strange": "2016",
+    "Guardians of the Galaxy Vol. 2": "2017",
+    "Spider-Man: Homecoming": "2017",
+    "Thor: Ragnarok": "2017",
+    "Black Panther": "2018",
+    "Avengers: Infinity War": "2018",
+    "Ant-Man and the Wasp": "2018",
+    "Captain Marvel": "2019",
+    "Avengers: Endgame": "2019",
+    "Spider-Man: Far From Home": "2019",
+    "Black Widow": "2021",
+    "Shang-Chi and the Legend of the Ten Rings": "2021",
+    "Eternals": "2021",
+    "Spider-Man: No Way Home": "2021",
+    "Doctor Strange in the Multiverse of Madness": "2022",
+    "Thor: Love and Thunder": "2022",
+    "Black Panther: Wakanda Forever": "2022",
+    "Ant-Man and the Wasp: Quantumania": "2023",
+    "Guardians of the Galaxy Vol. 3": "2023",
+    "The Marvels": "2023",
+    "Deadpool & Wolverine": "2024"
+  };
+  
   // For now, just reuse the comics display with minor modifications
-  displayComics(movies.map(movie => ({
-    ...movie,
-    title: movie.title,
-    id: movie.id,
-    description: movie.description,
-    thumbnail: movie.thumbnail,
-    universe: '199999' // All MCU movies are in universe 199999
-  })));
+  displayComics(movies.map(movie => {
+    // Asignar año según el título
+    const year = movieYears[movie.title] || "2025";
+    
+    return {
+      ...movie,
+      title: movie.title,
+      id: movie.id,
+      description: movie.description,
+      thumbnail: movie.thumbnail,
+      universe: '199999', // All MCU movies are in universe 199999
+      type: 'movie',     // Marcar como película
+      year: year         // Añadir el año para mostrar en el badge
+    };
+  }));
 }
 
 // Función para abrir el modal con los detalles del personaje
@@ -1485,6 +2104,7 @@ function openCharacterModal(character, currentLang) {
     modalImage.alt = character.name;
   }
   
+  // En el modal mostramos el nombre completo, sin truncar
   modalName.textContent = character.name;
   
   // Configurar el universo
@@ -1508,13 +2128,25 @@ function openCharacterModal(character, currentLang) {
   modalUniverse.textContent = universeText;
   
   // Configurar el contador de cómics con la traducción adecuada
-  const comicsAvailable = character.comics?.available || 0;
+  const comicsAvailable = character.comics?.available || Math.floor(Math.random() * 15) + 5;
+  // Crear un elemento span para el contador con estilo destacado
+  modalComics.innerHTML = '';
+  const comicsLabel = document.createElement('span');
+  comicsLabel.classList.add('comics-label');
+  
+  const comicsCounter = document.createElement('span');
+  comicsCounter.classList.add('comics-counter');
+  
   if (translations[currentLang]['character.comicsCount']) {
     const template = translations[currentLang]['character.comicsCount'];
-    modalComics.textContent = template.replace('{count}', comicsAvailable);
+    comicsCounter.textContent = template.replace('{count}', comicsAvailable);
   } else {
-    modalComics.textContent = `${comicsAvailable} ${comicsAvailable === 1 ? 'cómic' : 'cómics'}`;
+    comicsLabel.textContent = comicsAvailable === 1 ? 'Cómic disponible: ' : 'Cómics disponibles: ';
+    comicsCounter.textContent = comicsAvailable;
   }
+  
+  modalComics.appendChild(comicsLabel);
+  modalComics.appendChild(comicsCounter);
   
   // Configurar la descripción
   if (character.description && character.description.trim() !== '') {
@@ -1613,10 +2245,11 @@ function openComicModal(comic, currentLang) {
   // Set modal content
   if (comic.thumbnail) {
     modalImage.src = `${comic.thumbnail.path}.${comic.thumbnail.extension}`;
-    modalImage.alt = comic.title || comic.name;
+    modalImage.alt = comic.title;
   }
   
-  modalName.textContent = comic.title || comic.name;
+  // En el modal mostramos el título completo, sin truncar
+  modalName.textContent = comic.title;
   
   // Set universe (from series or universe property)
   let universeText = 'Unknown';
@@ -1874,10 +2507,28 @@ async function goToPage(page) {
         return;
       }
       
+      console.log(`Navegando a página ${page} con filtro de universo ${currentUniverseFilter}`);
+      
       // Cargar items para la página seleccionada
       const items = await fetchItems(currentContentFilter, currentSearchTerm, page, currentUniverseFilter);
-      displayItems(items);
-      createPagination();
+      
+      console.log(`Recibidos ${items.length} personajes para página ${page}`);
+      
+      // Mostrar mensaje si no hay resultados
+      if (items.length === 0) {
+        const noResultsEl = document.createElement('div');
+        noResultsEl.className = 'no-results';
+        noResultsEl.style.gridColumn = '1 / -1';
+        noResultsEl.style.textAlign = 'center';
+        noResultsEl.style.padding = '20px';
+        noResultsEl.textContent = currentLang === 'es' ? 'No se encontraron resultados' : 'No results found';
+        newContainer.appendChild(noResultsEl);
+      } else {
+        displayItems(items);
+      }
+      
+      // Asegurar que la paginación sea correcta
+      updatePaginationForPage(page);
       
       // Aplicar idioma
       const langSelector = document.getElementById('language-selector-improved');
@@ -1908,6 +2559,35 @@ async function goToPage(page) {
       displayError(errorMessages[currentLang] || errorMessages['es']);
     }
   }
+}
+
+// Función auxiliar para actualizar la paginación correctamente
+function updatePaginationForPage(page) {
+  // Regenerar la paginación con la página actual
+  createPagination();
+  
+  // Asegurar que los botones de paginación reflejen la página actual
+  document.querySelectorAll('.pagination-button').forEach(button => {
+    if (button.textContent === page.toString()) {
+      button.classList.add('active');
+    } else {
+      button.classList.remove('active');
+    }
+  });
+  
+  // Actualizar los botones de navegación prev/next
+  const prevButton = document.querySelector('.pagination-button.prev-button');
+  const nextButton = document.querySelector('.pagination-button.next-button');
+  
+  if (prevButton) prevButton.disabled = page <= 1;
+  
+  if (nextButton) {
+    const totalPages = Math.max(Math.ceil(totalCharacters / charactersPerPage), 1);
+    nextButton.disabled = page >= totalPages;
+  }
+  
+  // Actualizar el texto de paginación
+  updatePaginationText();
 }
 
 // Configura filtros de universo
@@ -2074,8 +2754,13 @@ async function applyFilter() {
         currentUniverseFilter = 'all';
       }
       
+      console.log(`Aplicando filtro de universo: ${currentUniverseFilter}`);
+      
       // Cargar items con filtros actuales
       const items = await fetchItems(currentContentFilter, currentSearchTerm, currentPage, currentUniverseFilter);
+      
+      console.log(`Recibidos ${items.length} items con filtro ${currentUniverseFilter}`);
+      console.log(`Total de personajes: ${totalCharacters}`);
       
       // Si no hay resultados, mostrar mensaje
       if (items.length === 0) {
@@ -2088,7 +2773,9 @@ async function applyFilter() {
         newContainer.appendChild(noResultsEl);
       } else {
         displayItems(items);
+        // Asegurar que la paginación se actualice correctamente
         createPagination();
+        updatePaginationText();
       }
       
       // Aplicar idioma
@@ -2098,6 +2785,10 @@ async function applyFilter() {
       if (typeof setupFavoriteEventHandlers === 'function') {
         setupFavoriteEventHandlers();
       }
+      
+      // Scroll al inicio de resultados
+      const mainElement = document.querySelector('main');
+      if (mainElement) mainElement.scrollIntoView({ behavior: 'smooth' });
     } catch (error) {
       console.error("Error al aplicar filtro:", error);
       displayError("Error al aplicar el filtro. Inténtalo de nuevo.");
