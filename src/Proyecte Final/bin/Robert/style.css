@@ -1,0 +1,1075 @@
+:root {
+    --rojito: #e62429;
+    --oscurito: #202020;
+    --casi-negro: #151515;
+    --blanquito: #f0f0f0;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0px;
+    padding: 0px;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: var(--casi-negro);
+    color: var(--blanquito);
+}
+
+main {            
+    margin-bottom: 300px;
+}
+
+.container {
+    margin: 0 auto;
+    padding: 0 1rem;
+}
+
+header {
+    background: linear-gradient(135deg, #000000, #2d2d2d);
+    padding: 2rem 0;
+    position: relative;
+}
+
+.header-content {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+}
+
+.marvel-logo {
+    font-size: 3.5rem;
+    font-weight: 900;
+    color: var(--blanquito);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 5px;
+    text-shadow: 3px 3px 0px rgba(0, 0, 0, 0.8);
+    display: inline-block;
+    position: relative;
+    padding: 0 10px;
+}
+
+.marvel-logo::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: var(--rojito);
+    z-index: -1;
+    transform: skewX(-25deg);
+}
+
+.subtitle {
+    font-size: 1.3rem;
+    color: #ccc;
+    margin-bottom: 2rem;
+    font-style: italic;
+}
+
+/* ========== ESTILOS MEJORADOS PARA TARJETAS ========== */
+.cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 2rem;
+    padding: 1rem;
+}
+
+.character-card {
+    background: linear-gradient(145deg, #2a2a2a, #1e1e1e);
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    position: relative;
+    height: 440px;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid #333;
+    z-index: 1;
+}
+
+.character-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(to bottom, transparent 60%, rgba(0,0,0,0.8) 90%);
+    z-index: 2;
+    pointer-events: none;
+}
+
+.character-card:hover {
+    transform: translateY(-10px) scale(1.03);
+    box-shadow: 0 15px 35px rgba(230, 36, 41, 0.4), 
+                0 5px 15px rgba(0, 0, 0, 0.7);
+    border-color: var(--rojito);
+}
+
+/* Estrella de favoritos */
+.favorite-icon {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    z-index: 10;
+    cursor: pointer;
+    background-color: rgba(0, 0, 0, 0.5);
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.favorite-icon:hover {
+    transform: scale(1.2);
+    background-color: rgba(0, 0, 0, 0.7);
+}
+
+.favorite-icon i {
+    color: var(--blanquito);
+    font-size: 18px;
+    transition: all 0.3s ease;
+}
+
+.favorite-icon.active i {
+    color: gold;
+}
+
+.favorite-icon:hover i {
+    animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+    100% { transform: scale(1); }
+}
+
+.character-image-container {
+    height: 280px;
+    overflow: hidden;
+    position: relative;
+}
+
+.character-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.6s ease, filter 0.3s ease;
+    transform-origin: center center;
+}
+
+.character-card:hover .character-image {
+    transform: scale(1.1);
+    filter: brightness(1.1);
+}
+
+.character-info {
+    padding: 1.5rem;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    position: relative;
+    z-index: 3;
+}
+
+.character-name {
+    font-size: 1.5rem;
+    font-weight: 800;
+    margin-bottom: 0.5rem;
+    color: var(--blanquito);
+    transition: all 0.3s ease;
+    position: relative;
+    display: inline-block;
+    height: 4rem;
+}
+
+.character-name::after {
+    content: '';
+    position: absolute;
+    bottom: -5px;
+    left: 0;
+    width: 0;
+    height: 3px;
+    background-color: var(--rojito);
+    transition: width 0.4s ease;
+}
+
+.character-card:hover .character-name::after {
+    width: 100%;
+}
+
+.character-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: auto;
+    padding-top: 0.8rem;
+    border-top: 1px solid #333;
+}
+
+.character-comics {
+    background-color: rgba(230, 36, 41, 0.2);
+    color: var(--blanquito);
+    padding: 0.3rem 0.8rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    transition: all 0.3s ease;
+}
+
+.character-card:hover .character-comics {
+    background-color: var(--rojito);
+    transform: translateY(-2px);
+}
+
+.character-comics::before {
+    content: '📚';
+    margin-right: 5px;
+    font-size: 0.9rem;
+}
+
+.character-card:hover .universe-badge {
+    transform: translateY(-5px);
+    background-color: var(--rojito);
+    border-color: var(--rojito);
+}
+
+/* Efecto de brillo al hacer hover */
+.character-card::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(circle at center, rgba(230, 36, 41, 0.1) 0%, transparent 70%);
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    pointer-events: none;
+    z-index: 2;
+}
+
+.character-card:hover::after {
+    opacity: 1;
+}
+
+/* Estilo para cuando no hay imagen */
+.no-image {
+    background: linear-gradient(135deg, #333, #111);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.no-image::before {
+    content: '🦸';
+    font-size: 3rem;
+    opacity: 0.3;
+}
+
+footer {
+    background: var(--oscurito);
+    padding: 2rem 0;
+    text-align: center;
+    width: 100%;
+    margin-top: auto;
+    margin: 0px;
+    position: relative;
+}
+
+.barrabuscador {
+    margin: 2rem auto;
+    max-width: 600px;
+    position: relative;
+    display: flex;
+    border-radius: 50px;
+    overflow: hidden;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    border: 2px solid var(--oscurito);
+    transition: all 0.3s ease;
+}
+
+.barrabuscador:hover {
+    box-shadow: 0 8px 20px rgba(230, 36, 41, 0.4);
+    border-color: var(--rojito);
+}
+
+#buscador {
+    flex: 1;
+    padding: 15px 20px;
+    font-size: 16px;
+    border: none;
+    outline: none;
+    background-color: var(--oscurito);
+    color: var(--blanquito);
+    letter-spacing: 0.5px;
+}
+
+#buscador::placeholder {
+    color: #888;
+    font-style: italic;
+}
+
+#search {
+    background-color: var(--rojito);
+    color: var(--blanquito);
+    border: none;
+    padding: 0 25px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    border-radius: 25px;
+}
+
+#search:hover {
+    background-color: #c41f24;
+}
+
+.copyright {
+    margin-top: 1rem;
+    font-size: 0.8rem;
+    color: #888;
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+/* Responsive design for modal */
+    position: relative;
+    z-index: 2;
+    text-align: center;
+}
+
+.copyright a {
+    color: var(--rojito);
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.copyright a:hover {
+    color: var(--blanquito);
+}
+
+/* Estilos para los filtros de universo */
+.universe-filters, .content-filters {
+    margin: 2rem auto;
+    text-align: center;
+}
+
+/* Estilos adicionales para mejorar los filtros */
+.universe-filters {
+    margin-top: 0.5rem;  /* Espacio reducido arriba al estar debajo del otro filtro */
+    transition: all 0.3s ease;  /* Animación suave al mostrar/ocultar */
+    overflow: hidden;  /* Para animar altura */
+}
+
+.universe-filters.hidden {
+    max-height: 0;
+    opacity: 0;
+    margin: 0;
+    padding: 0;
+}
+
+.universe-filters.visible {
+    max-height: 300px;  /* Altura máxima para la animación */
+    opacity: 1;
+}
+
+/* Separación más clara entre los grupos de filtros */
+.content-filters {
+    margin-bottom: 1rem;
+    border-bottom: 1px solid #333;
+    padding-bottom: 1.5rem;
+}
+
+.filters-title {
+    font-size: 1.2rem;
+    margin-bottom: 1rem;
+    color: var(--blanquito);
+    position: relative;
+    display: inline-block;
+    padding-bottom: 0.5rem;
+}
+
+.filters-title::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 10%;
+    right: 10%;
+    height: 3px;
+    background-color: var(--rojito);
+}
+
+.filter-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 1.5rem;
+}
+
+.filter-button, .content-filter-button {
+    background-color: var(--oscurito);
+    color: var(--blanquito);
+    border: 2px solid #444;
+    border-radius: 25px;
+    padding: 8px 16px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    z-index: 1;
+}
+
+.filter-button::before, .content-filter-button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background-color: var(--rojito);
+    border-radius: 25px;
+    transition: all 0.2s ease;
+    z-index: -1;
+}
+
+.filter-button:hover, .content-filter-button:hover {
+    color: var(--blanquito);
+    border-color: var(--rojito);
+}
+
+.filter-button:hover::before, .content-filter-button:hover::before {
+    left: 0;
+}
+
+.filter-button.active, .content-filter-button.active {
+    background-color: var(--rojito);
+    border-color: var(--rojito);
+    color: white;
+    font-weight: bold;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.universe-badge {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background-color: rgba(0, 0, 0, 0.7);
+    color: var(--blanquito);
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    border-left: 3px solid var(--rojito);
+    border-right: 3px solid var(--rojito);
+    z-index: 2;
+}
+
+.language-selector-container {
+    position: relative;
+    display: inline-block;
+    margin-top: 15px;
+}
+
+.language-label {
+    color: var(--blanquito);
+    margin-right: 10px;
+    font-size: 0.9rem;
+}
+
+.language-selector {
+    appearance: none;
+    background-color: var(--oscurito);
+    color: var(--blanquito);
+    border: 2px solid #444;
+    border-radius: 25px;
+    padding: 8px 16px 8px 12px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    min-width: 120px;
+    text-align: center;
+    background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23FFFFFF%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px top 50%;
+    background-size: 12px auto;
+    padding-right: 30px;
+}
+
+.language-selector:hover, .language-selector:focus {
+    border-color: var(--rojito);
+    box-shadow: 0 0 8px rgba(230, 36, 41, 0.4);
+    outline: none;
+}
+
+.language-selector::after {
+    content: '';
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-top: 5px solid var(--blanquito);
+    pointer-events: none;
+}
+
+.language-selector:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(230, 36, 41, 0.3);
+}
+
+.idioma {
+    position: absolute;
+    right: 20px;
+    top: 0px;
+    width: auto;
+    float: right;
+    margin-bottom: 1.2rem;
+}
+
+#error-container {
+    color: red;
+    font-weight: bold;
+    display: none;
+    text-align: center;
+    margin-top: 10px;
+    font-size: 1.2rem;
+    padding: 10px;
+    background-color: rgba(255, 0, 0, 0.1);
+    border: 2px solid rgba(255, 0, 0, 0.5);
+    border-radius: 5px; 
+}
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    margin: 2rem auto;
+    gap: 10px;
+    padding: 1rem;
+    position: relative;
+}
+
+.pagination-button {
+    background-color: var(--oscurito);
+    color: var(--blanquito);
+    border: 2px solid #444;
+    border-radius: 8px;
+    min-width: 40px;
+    height: 40px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    z-index: 1;
+}
+
+.pagination-button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background-color: var(--rojito);
+    transition: all 0.2s ease;
+    z-index: -1;
+}
+
+.pagination-button:hover:not(:disabled) {
+    color: var(--blanquito);
+    border-color: var(--rojito);
+}
+
+.pagination-button:hover:not(:disabled)::before {
+    left: 0;
+}
+
+.pagination-button.active {
+    background-color: var(--rojito);
+    border-color: var(--rojito);
+    color: white;
+    font-weight: bold;
+}
+
+.pagination-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.prev-button, .next-button {
+    padding: 0 15px;
+    font-size: 18px;
+}
+
+.pagination-ellipsis {
+    color: var(--blanquito);
+    margin: 0 5px;
+    font-weight: bold;
+}
+
+.pagination-info {
+    margin-top: 10px;
+    color: #aaa;
+    font-size: 0.9rem;
+    width: 100%;
+    text-align: center;
+}
+
+.loading-spinner {
+    width: 60px;
+    height: 60px;
+    border: 6px solid rgba(230, 36, 41, 0.3);
+    border-radius: 50%;
+    border-top-color: var(--rojito);
+    animation: spin 1s ease-in-out infinite;
+    margin: 40px auto;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Make sure pagination is responsive */
+@media (max-width: 768px) {
+    .pagination {
+        gap: 5px;
+    }
+    
+    .pagination-button {
+        min-width: 35px;
+        height: 35px;
+        font-size: 14px;
+    }
+}
+
+/* Modal Styles */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(5px);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.modal.show {
+    display: block;
+    opacity: 1;
+}
+
+.modal-content {
+    background: linear-gradient(145deg, #2a2a2a, #1e1e1e);
+    margin: 5% auto;
+    width: 80%;
+    max-width: 900px;
+    border-radius: 16px;
+    box-shadow: 0 15px 50px rgba(230, 36, 41, 0.4), 
+                0 5px 20px rgba(0, 0, 0, 0.7);
+    border: 2px solid var(--rojito);
+    overflow: hidden;
+    position: relative;
+    transform: translateY(-30px);
+    opacity: 0;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.modal.show .modal-content {
+    transform: translateY(0);
+    opacity: 1;
+}
+
+.close-modal {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    color: var(--blanquito);
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+    z-index: 10;
+    transition: all 0.2s ease;
+}
+
+.close-modal:hover {
+    color: var(--rojito);
+    transform: scale(1.2);
+}
+
+.modal-body {
+    display: flex;
+    flex-direction: row;
+    padding: 0;
+}
+
+.modal-left {
+    flex: 0 0 40%;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+}
+
+.modal-left img {
+    width: 100%;
+    height: 400px;
+    object-fit: cover;
+    object-position: top center;
+}
+
+.modal-left h2 {
+    background-color: rgba(0, 0, 0, 0.7);
+    color: var(--blanquito);
+    padding: 15px;
+    margin: 0;
+    font-size: 1.8rem;
+    position: relative;
+    width: 100%;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+    border-left: 4px solid var(--rojito);
+}
+
+.modal-favorite-btn {
+    background-color: var(--rojito);
+    color: var(--blanquito);
+    padding: 10px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.modal-favorite-btn:hover {
+    background-color: #c41f24;
+}
+
+.modal-favorite-btn.active i {
+    color: gold;
+}
+
+.modal-right {
+    flex: 0 0 60%;
+    padding: 25px;
+    color: var(--blanquito);
+    max-height: 500px;
+    overflow-y: auto;
+}
+
+.modal-info-section {
+    margin-bottom: 20px;
+}
+
+.modal-info-section h3 {
+    color: var(--rojito);
+    font-size: 1.3rem;
+    margin-bottom: 5px;
+    position: relative;
+    display: inline-block;
+}
+
+.modal-info-section h3::after {
+    content: '';
+    position: absolute;
+    bottom: -3px;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background-color: var(--rojito);
+}
+
+.modal-info-section p {
+    line-height: 1.6;
+    margin: 8px 0;
+}
+
+/* Style for "View More" button replacing comics count */
+.view-more-btn {
+    background-color: var(--rojito);
+    color: var(--blanquito);
+    padding: 8px 15px;
+    border: none;
+    border-radius: 20px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.view-more-btn:hover {
+    background-color: #c41f24;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.3);
+}
+
+.view-more-btn::after {
+    content: '→';
+    margin-left: 5px;
+    font-size: 1rem;
+    transition: transform 0.2s ease;
+}
+
+.view-more-btn:hover::after {
+    transform: translateX(3px);
+}
+
+/* Toast para favoritos */
+.favorite-toast {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background-color: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 10px 20px;
+    border-radius: 30px;
+    z-index: 2000;
+    font-size: 14px;
+    transition: transform 0.3s ease;
+    border-left: 4px solid var(--rojito);
+    border-right: 4px solid var(--rojito);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+.favorite-toast.show {
+    transform: translateX(-50%) translateY(0);
+}
+
+/* Responsive design for modal */
+@media (max-width: 768px) {
+    .modal-content {
+        width: 95%;
+        margin: 10% auto;
+    }
+    
+    .modal-body {
+        flex-direction: column;
+    }
+    
+    .modal-left, .modal-right {
+        flex: 0 0 100%;
+    }
+    
+    .modal-left img {
+        height: 300px;
+    }
+}
+
+.contact-section {
+    text-align: left;
+    margin: 20px 0;
+    float: left;
+    left: 25px;
+    position: absolute;
+}
+
+.contact-section .instagram-link {
+    color: #E1306C;
+    text-decoration: none;
+    font-size: 18px;
+}
+
+.contact-section .instagram-link i {
+    margin-right: 8px;
+}
+
+.contact-section .instagram-link:hover {
+    color: #C13584;
+}
+/* Estilos para los filtros de contenido */
+.content-filters {
+    margin: 2rem auto;
+    text-align: center;
+    margin-bottom: 1rem;
+    border-bottom: 1px solid #333;
+    padding-bottom: 1.5rem;
+}
+
+/* Estilos para los botones de filtro de contenido */
+.content-filter-button {
+    background-color: var(--oscurito);
+    color: var(--blanquito);
+    border: 2px solid #444;
+    border-radius: 25px;
+    padding: 8px 16px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    z-index: 1;
+}
+
+.content-filter-button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background-color: var(--rojito);
+    border-radius: 25px;
+    transition: all 0.2s ease;
+    z-index: -1;
+}
+
+.content-filter-button:hover {
+    color: var(--blanquito);
+    border-color: var(--rojito);
+}
+
+.content-filter-button:hover::before {
+    left: 0;
+}
+
+.content-filter-button.active {
+    background-color: var(--rojito);
+    border-color: var(--rojito);
+    color: white;
+    font-weight: bold;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* Estilos para los filtros de universo (ahora aparecerán/desaparecerán) */
+.universe-filters {
+    margin-top: 0.5rem;
+    transition: all 0.3s ease;
+    overflow: hidden;
+}
+
+.universe-filters.hidden {
+    max-height: 0;
+    opacity: 0;
+    margin: 0;
+    padding: 0;
+}
+
+.universe-filters.visible {
+    max-height: 300px;
+    opacity: 1;
+}
+
+/* Estrella de favoritos */
+.favorite-icon {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    z-index: 10;
+    cursor: pointer;
+    background-color: rgba(0, 0, 0, 0.5);
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.favorite-icon:hover {
+    transform: scale(1.2);
+    background-color: rgba(0, 0, 0, 0.7);
+}
+
+.favorite-icon i {
+    color: var(--blanquito);
+    font-size: 18px;
+    transition: all 0.3s ease;
+}
+
+.favorite-icon.active i {
+    color: gold;
+}
+
+.favorite-icon:hover i {
+    animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+    100% { transform: scale(1); }
+}
+
+/* Botón de favoritos en modal */
+.modal-favorite-btn {
+    background-color: var(--rojito);
+    color: var(--blanquito);
+    padding: 10px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.modal-favorite-btn:hover {
+    background-color: #c41f24;
+}
+
+.modal-favorite-btn.active i {
+    color: gold;
+}
+
+/* Toast para favoritos */
+.favorite-toast {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background-color: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 10px 20px;
+    border-radius: 30px;
+    z-index: 2000;
+    font-size: 14px;
+    transition: transform 0.3s ease;
+    border-left: 4px solid var(--rojito);
+    border-right: 4px solid var(--rojito);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+.favorite-toast.show {
+    transform: translateX(-50%) translateY(0);
+}
+
+#datos{
+    text-align: center;
+    position: relative;
+    width: auto;
+}
